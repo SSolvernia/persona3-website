@@ -23,9 +23,26 @@ dist-ssr
 *.sln
 *.sw?
 
-# Heavy original captures. `npm run media` turns them into the small
-# web-ready files in src/assets, which are committed.
-media-src/*.mp4
-media-src/*.mov
+# Source material, not used by the site: the originals in media-src/ and the
+# sound pack. `npm run media` turns them into the small web-ready files in
+# src/assets, which are committed. Keep a copy of these folders yourself:
+# without them the media can't be regenerated.
+media-src/
+Persona 3 Reload SFX/
+
+# Leftovers of the original template that no page imports. Vite only bundles
+# what the code imports, so they never reach the site; this keeps them out of
+# the repository too.
+src/assets/066fce1e-074d-4739-b798-efd06e0bf6ea.jpg
+src/assets/card.png
+src/assets/char1.webp
+src/assets/char2.webp
+src/assets/char3.webp
+src/assets/circletransition.mp4
+src/assets/hero.png
+src/assets/newsign.webp
+src/assets/react.svg
+src/assets/vite.svg
+public/icons.svg
 
 .claude/
