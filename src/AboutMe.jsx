@@ -1,77 +1,216 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import char1 from "./assets/char1.png";
-import char2 from "./assets/char2.png";
-import char3 from "./assets/char3.png";
-import bgVideo from "./assets/main1.mp4";
-import icon1 from "./assets/icon1.png";
-import icon2 from "./assets/icon2.png";
-import icon3 from "./assets/icon3.png";
-import mainm from "./assets/mainm.jpeg";
-import mainm2 from "./assets/mainm2.jpeg";
-import mainf from "./assets/mainf.jpeg";
+import { aboutBg } from "./media";
+import { play } from "./sound";
+import BgVideo from "./BgVideo";
+import KeyHints from "./KeyHints";
+import makotoProfile from "./assets/makoto-profile.webp";
+import junpeiProfile from "./assets/junpei-profile.webp";
+import yukariProfile from "./assets/yukari-profile.webp";
+import akihikoProfile from "./assets/akihiko-profile.webp";
+import mitsuruProfile from "./assets/mitsuru-profile.webp";
+import fuukaProfile from "./assets/fuuka-profile.webp";
+import aigisProfile from "./assets/aigis-profile.webp";
+import kenProfile from "./assets/ken-profile.webp";
+import koromaruProfile from "./assets/koromaru-profile.webp";
+import shinjiroProfile from "./assets/shinjiro-profile.webp";
+import makotoBust from "./assets/makoto-bust.webp";
+import junpeiBust from "./assets/junpei-bust.webp";
+import yukariBust from "./assets/yukari-bust.webp";
+import akihikoBust from "./assets/akihiko-bust.webp";
+import mitsuruBust from "./assets/mitsuru-bust.webp";
+import fuukaBust from "./assets/fuuka-bust.webp";
+import aigisBust from "./assets/aigis-bust.webp";
+import kenBust from "./assets/ken-bust.webp";
+import koromaruBust from "./assets/koromaru-bust.webp";
+import shinjiroBust from "./assets/shinjiro-bust.webp";
 
-const CHARS = [char1, char2, char3];
-const MAIN_IMAGES = [mainm, mainm2, mainf];
+// The page language. Every text below has an English and a Spanish version;
+// switch this to "es" (or wire it to a language picker later).
+const LANG = "en";
 
-const REVEAL_CONTENT = [
+// One row per entry of the list, top to bottom. To add, remove or reorder
+// entries, edit only this table:
+//   role      slanted word at the left of the bar. LEADER and NAVI are
+//             fixed. PARTY marks who starts in the party; the visitor can
+//             swap members with Space, up to PARTY_SIZE at a time. Without
+//             a role the bar starts at the portrait's nose, as in the game.
+//   profile   side portrait shown on the bar
+//   portrait  bust shown when the entry is opened
+//   face      where the face is across the bust, as a fraction of the
+//             bust's height (the busts differ in width): the page lines
+//             every face up at the same spot
+//   color     the member's colour, behind that bust
+//   en / es   the texts in each language:
+//     label   text on the bar
+//     upper   lines of the big black box
+//     lower   line of the small black box
+// The images come from `npm run media -- images` (scripts/optimize-media.sh).
+const PARTY = [
   {
-    upper: ["name moneybagg", "age:23"],
-    lower: "major: computer science",
+    id: "about", role: "LEADER", profile: makotoProfile, portrait: makotoBust, face: 0.26, color: "#1f74e0",
+    en: {
+      label: "ABOUT ME",
+      upper: ["Juan Diego Ortega Alzate", "30 years old", "Front-end developer at Eventtia Inc."],
+      lower: "lawyer turned developer",
+    },
+    es: {
+      label: "SOBRE MÍ",
+      upper: ["Juan Diego Ortega Alzate", "30 años", "Desarrollador front-end en Eventtia Inc."],
+      lower: "de abogado a desarrollador",
+    },
   },
   {
-    upper: [
-      "Cleopatra lived closer to the Moon landing than to the building of the pyramids.",
-      "Vikings kept cats on ships for pest control (and vibes).",
-      "In medieval Europe, animals could be put on trial for crimes",
-    ],
-    lower: "abbove is some history fun fact",
+    id: "fun-fact", role: "PARTY", profile: junpeiProfile, portrait: junpeiBust, face: 0.44, color: "#2a4bf0",
+    en: {
+      label: "FUN FACT ABOUT ME",
+      upper: ["Before writing code, I practiced law in Colombia.", "Four years as a lawyer, four years as a programmer."],
+      lower: "from contracts to components",
+    },
+    es: {
+      label: "DATO CURIOSO",
+      upper: ["Antes de programar, ejercí como abogado en Colombia.", "Cuatro años en el derecho, cuatro años programando."],
+      lower: "de contratos a componentes",
+    },
   },
   {
-    upper: [
-      "Oxford University founding is older than the Aztec Empire.",
-      "The shortest war in history lasted 38–45 minutes (Britain vs Zanzibar).",
-      "Humans have been writing for ~5,000 years",
-    ],
-    lower: "yes it's a place holder",
+    id: "weird-fact", role: "PARTY", profile: yukariProfile, portrait: yukariBust, face: 0.3, color: "#d330c2",
+    en: {
+      label: "WEIRD FACT ABOUT ME",
+      upper: ["I mod games just for the fun of it.", "No reason needed: if it can be tweaked, I want to try."],
+      lower: "modding for fun",
+    },
+    es: {
+      label: "DATO RARO",
+      upper: ["Modifico videojuegos solo por diversión.", "Sin más motivo: si se puede ajustar, quiero probarlo."],
+      lower: "modding por diversión",
+    },
+  },
+  // As in the game's party list: the order is fixed, PARTY marks the
+  // members fighting next to the leader, and the navigator goes last.
+  {
+    id: "skills", profile: akihikoProfile, portrait: akihikoBust, face: 0.42, color: "#b8142e",
+    en: {
+      label: "SKILLS",
+      upper: [
+        "HTML, CSS and JavaScript",
+        "React, Next.js and Vite",
+        "Local and hosted LLMs, like Claude",
+        "4 years of programming experience",
+      ],
+      lower: "the dev toolkit",
+    },
+    es: {
+      label: "HABILIDADES",
+      upper: [
+        "HTML, CSS y JavaScript",
+        "React, Next.js y Vite",
+        "LLMs locales y en la nube, como Claude",
+        "4 años de experiencia programando",
+      ],
+      lower: "el kit del desarrollador",
+    },
+  },
+  {
+    id: "work", profile: mitsuruProfile, portrait: mitsuruBust, face: 0.4, color: "#d03536",
+    en: {
+      label: "WORK",
+      upper: ["Front-end developer at Eventtia Inc.", "Before that: lawyer in Colombia for 4 years"],
+      lower: "current quest",
+    },
+    es: {
+      label: "TRABAJO",
+      upper: ["Desarrollador front-end en Eventtia Inc.", "Antes: abogado en Colombia durante 4 años"],
+      lower: "misión actual",
+    },
+  },
+  {
+    id: "hobbies", role: "PARTY", profile: aigisProfile, portrait: aigisBust, face: 0.61, color: "#d8b52a",
+    en: {
+      label: "HOBBIES",
+      upper: ["Building model kits", "Modding games, just for fun", "Video games and tabletop roleplaying"],
+      lower: "off the clock",
+    },
+    es: {
+      label: "HOBBIES",
+      upper: ["Armar model kits", "Modificar juegos, solo por diversión", "Videojuegos y rol de mesa"],
+      lower: "fuera del horario",
+    },
+  },
+  {
+    id: "games", profile: kenProfile, portrait: kenBust, face: 0.53, color: "#ed7a1f",
+    en: {
+      label: "GAMES",
+      upper: [
+        "The Persona series, Final Fantasy and NieR:Automata",
+        "Baldur's Gate and Outer Wilds",
+        "At the table: Dungeons & Dragons",
+      ],
+      lower: "roll for initiative",
+    },
+    es: {
+      label: "JUEGOS",
+      upper: [
+        "La saga Persona, Final Fantasy y NieR:Automata",
+        "Baldur's Gate y Outer Wilds",
+        "En la mesa: Dungeons & Dragons",
+      ],
+      lower: "tira iniciativa",
+    },
+  },
+  {
+    id: "ai", profile: koromaruProfile, portrait: koromaruBust, face: 0.6, color: "#8f99ad",
+    en: {
+      label: "AI",
+      upper: ["Running language models locally, on my own hardware", "Working with hosted models like Claude"],
+      lower: "local + cloud LLMs",
+    },
+    es: {
+      label: "IA",
+      upper: ["Modelos de lenguaje corriendo en local, en mi propio equipo", "Trabajo con modelos en la nube como Claude"],
+      lower: "LLMs locales y en la nube",
+    },
+  },
+  {
+    id: "goals", profile: shinjiroProfile, portrait: shinjiroBust, face: 0.67, color: "#8c1a33",
+    en: {
+      label: "GOALS",
+      upper: ["Keep learning, always.", "Every new technology is the next dungeon to explore."],
+      lower: "never stop learning",
+    },
+    es: {
+      label: "METAS",
+      upper: ["Seguir aprendiendo, siempre.", "Cada tecnología nueva es la próxima mazmorra por explorar."],
+      lower: "nunca dejar de aprender",
+    },
+  },
+  {
+    id: "studies", role: "NAVI", profile: fuukaProfile, portrait: fuukaBust, face: 0.49, color: "#1fc496",
+    en: {
+      label: "STUDIES",
+      upper: ["Law: lawyer in Colombia", "Programming: 4 years and counting"],
+      lower: "two careers, one curious mind",
+    },
+    es: {
+      label: "ESTUDIOS",
+      upper: ["Derecho: abogado en Colombia", "Programación: 4 años y sumando"],
+      lower: "dos carreras, una mente curiosa",
+    },
   },
 ];
 
-const ROLES = [
-  { text: "LEADER", color: "#e8c100", bg: "rgba(232,193,0,0.12)", border: "rgba(232,193,0,0.5)" },
-  { text: "PARTY",  color: "#4a8fff", bg: "rgba(74,143,255,0.12)", border: "rgba(74,143,255,0.5)" },
-  { text: "PARTY",  color: "#4a8fff", bg: "rgba(74,143,255,0.12)", border: "rgba(74,143,255,0.5)" },
-];
-
-const ITEMS = [
-  {
-    id: "twitch", label: "ABOUT ME", handle: "@yourname", href: "https://twitch.tv/yourname", icon: "🎮", barIcon: icon1, bars: 1, newBars: [0], counts: ["56"],
-    links: ["twitch.tv/videos/2041837265"],
-    stats: [
-      { tag: "FOL", value: "1.2K", color: "#9147ff" },
-      { tag: "VWR", value: "042",  color: "#bf94ff" },
-    ],
-  },
-  {
-    id: "instagram", label: "FUN FACT ABOUT ME", handle: "@yourhandle", href: "https://instagram.com/yourhandle", icon: "📷", barIcon: icon2, bars: 5, newBars: [1, 2], counts: ["3.4M", "2.5M", "676K", "412K", "198K"],
-    links: ["instagram.com/p/C4xQmRrNk2a", "instagram.com/p/C3wLpBsOj7f", "instagram.com/reel/C2vKoArMi6e", "instagram.com/p/C1uJnZqLh5d", "instagram.com/reel/C0tImYpKg4c"],
-    stats: [
-      { tag: "FOL", value: "3.4K", color: "#e1306c" },
-      { tag: "PST", value: "128",  color: "#f77737" },
-    ],
-  },
-  {
-    id: "tiktok", label: "WIRED FACT ABOUT ME", handle: "@yourhandle", href: "https://tiktok.com/@yourhandle", icon: "🎵", barIcon: icon3, bars: 7, newBars: [0, 3, 5, 6], counts: ["5.1M", "3.7M", "2.2M", "1.4M", "831K", "490K", "217K"],
-    links: ["tiktok.com/@yourhandle/video/7318492016374859054", "tiktok.com/@yourhandle/video/7305837261940183342", "tiktok.com/@yourhandle/video/7291046385720348974", "tiktok.com/@yourhandle/video/7278392047163820334", "tiktok.com/@yourhandle/video/7264819203847165742", "tiktok.com/@yourhandle/video/7251047382916430126", "tiktok.com/@yourhandle/video/7237294018463851822"],
-    stats: [
-      { tag: "FOL", value: "8.9K", color: "#00f2ea" },
-      { tag: "LKS", value: "52K",  color: "#ff0050" },
-    ],
-  },
-];
+// How many members can fight next to the leader.
+const PARTY_SIZE = 3;
+const FIXED_ROLES = ["LEADER", "NAVI"];
+const STARTING_PARTY = PARTY.filter((item) => item.role === "PARTY").map((item) => item.id);
 
 export default function AboutMe() {
   const [active, setActive]   = useState(0);
+  // Ids of the members in the party (the leader and navigator are not counted).
+  const [party, setParty] = useState(STARTING_PARTY);
+  // Bumped when a member can't join because the party is full; it restarts
+  // the "PARTY FULL" flash on that bar.
+  const [denied, setDenied] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const navigate = useNavigate();
@@ -81,57 +220,108 @@ export default function AboutMe() {
     return () => clearTimeout(t);
   }, []);
 
+  const roleOf = (item) =>
+    FIXED_ROLES.includes(item.role) ? item.role : party.includes(item.id) ? "PARTY" : null;
+
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "ArrowUp") setActive(i => Math.max(0, i - 1));
-      if (e.key === "ArrowDown") setActive(i => Math.min(ITEMS.length - 1, i + 1));
-      if (e.key === "Enter") setRevealed(true);
-      if (e.key === "ArrowRight") setRevealed(true);
-      if (e.key === "ArrowLeft") {
-        if (revealed) setRevealed(false);
-        else navigate(-1);
+      const select = (i) => {
+        if (i !== active) play("cursor");
+        setActive(i);
+      };
+      const back = () => {
+        play("back");
+        navigate(-1);
+      };
+      // In the detail view, A / D step to the previous / next entry (wrapping
+      // around), so every entry can be read without closing the panel.
+      const key = e.key.toLowerCase();
+      if (revealed && !e.metaKey && !e.ctrlKey && !e.altKey && (key === "a" || key === "d")) {
+        play("tab");
+        setActive((active + (key === "d" ? 1 : -1) + PARTY.length) % PARTY.length);
       }
-      if (e.key === "Escape" || e.key === "Backspace") navigate(-1);
+      // Space adds the selected entry to the party or takes it out. Ignored on
+      // a focused button, which Space presses on its own.
+      if (e.key === " " && !revealed && !(e.target instanceof HTMLButtonElement)) {
+        e.preventDefault();
+        const item = PARTY[active];
+        if (e.repeat || FIXED_ROLES.includes(item.role)) return;
+        if (party.includes(item.id)) {
+          play("hide");
+          setParty(party.filter((id) => id !== item.id));
+        } else if (party.length < PARTY_SIZE) {
+          play("show");
+          setParty([...party, item.id]);
+        } else {
+          setDenied({ index: active, n: (denied?.n ?? 0) + 1 });
+        }
+      }
+      if (e.key === "ArrowUp") select(Math.max(0, active - 1));
+      if (e.key === "ArrowDown") select(Math.min(PARTY.length - 1, active + 1));
+      if (e.key === "Enter" || e.key === "ArrowRight") {
+        if (!revealed) play("show");
+        setRevealed(true);
+      }
+      // Back closes the detail panel first; only from the list does it leave the page.
+      if (e.key === "ArrowLeft" || e.key === "Escape" || e.key === "Backspace") {
+        if (revealed) {
+          play("hide");
+          setRevealed(false);
+        } else back();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, navigate, revealed]);
+  }, [active, navigate, revealed, party, denied]);
+
+  // Same as A / D, for a click on the letters shown in the detail view.
+  const step = (by) => {
+    play("tab");
+    setActive((active + by + PARTY.length) % PARTY.length);
+  };
 
   return (
     <div id="menu-screen">
-      <video src={bgVideo} autoPlay loop muted playsInline />
+      <BgVideo media={aboutBg} />
       {revealed && <div key={`dim-${active}`} className="sc-dim" />}
       {revealed && (
         <div key={`panel-${active}`} className={`sc-reveal-panel${mounted ? " mounted" : ""}`}>
           <div className="sc-reveal-upper-bar">
-            {REVEAL_CONTENT[active].upper.map((line) => (
+            {PARTY[active][LANG].upper.map((line) => (
               <div className="sc-reveal-upper-line" key={line}>{line}</div>
             ))}
           </div>
-          <div className="sc-reveal-lower-bar">{REVEAL_CONTENT[active].lower}</div>
+          <div className="sc-reveal-lower-bar">{PARTY[active][LANG].lower}</div>
         </div>
       )}
       {revealed && (
         <div key={`nav-${active}`} className="sc-right-nav">
           <span className="sc-nav-arrow left">◄</span>
-          <span className="sc-nav-btn">LB</span>
+          <button type="button" tabIndex={-1} className="sc-nav-btn" onClick={() => step(-1)} aria-label="Previous">A</button>
           <span className="sc-nav-dot" />
-          <span className="sc-nav-btn">RB</span>
+          <button type="button" tabIndex={-1} className="sc-nav-btn" onClick={() => step(1)} aria-label="Next">D</button>
           <span className="sc-nav-arrow right">►</span>
         </div>
       )}
       {revealed && (
-        <div key={`portrait-${active}`} className={`sc-main-portrait-shell${mounted ? " mounted" : ""}`}>
-          <img
-            className="sc-main-portrait"
-            src={MAIN_IMAGES[active]}
-            alt=""
-          />
+        <div
+          key={`portrait-${active}`}
+          className={`sc-main-portrait-shell${mounted ? " mounted" : ""}`}
+          style={{ "--member": PARTY[active].color, "--face": PARTY[active].face }}
+        >
+          <div className="sc-portrait-band" />
+          <img className="sc-main-portrait" src={PARTY[active].portrait} alt="" />
+        </div>
+      )}
+      {/* The grey corner and role tag of the game's status screen. */}
+      {revealed && <div className="sc-corner" />}
+      {revealed && roleOf(PARTY[active]) && (
+        <div key={`badge-${active}`} className="sc-role-badge">
+          <span className="sc-role-badge-mark" />
+          <span className="sc-role-badge-text">{roleOf(PARTY[active])}</span>
         </div>
       )}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,700;1,700&family=Montserrat:wght@300&display=swap');
-
         .sc-root {
           position: absolute;
           inset: 0;
@@ -141,9 +331,17 @@ export default function AboutMe() {
           flex-direction: column;
           align-items: flex-start;
           justify-content: center;
-          gap: 6px;
+          /* Bar height follows the window height, so the whole list (ten bars
+             plus the taller active one) fits without scrolling. */
+          --bar: clamp(36px, 6.6vh, 64px);
+          --bar-active: calc(var(--bar) * 1.4);
+          gap: calc(var(--bar) * 0.09);
           padding-left: 0;
+          transition: opacity 0.2s ease;
         }
+        /* The list is taller than the open panel, so it would show around it. */
+        .sc-root.revealed { opacity: 0; }
+        .sc-root.revealed .sc-bar-bg { pointer-events: none; }
 
         .sc-dim {
           position: absolute;
@@ -215,6 +413,10 @@ export default function AboutMe() {
           width: 43vw;
           height: 100vh;
           overflow: hidden;
+          /* Dark backdrop with faint diagonal stripes, as on the status screen. */
+          background:
+            repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 7vh, transparent 7vh 19vh),
+            #2c3039;
           opacity: 0;
           transform: translateX(24px) skewX(-8deg) scale(0.98);
           transition: opacity 0.35s ease, transform 0.35s ease;
@@ -335,6 +537,8 @@ export default function AboutMe() {
           background: none;
           border: none;
           padding: 0 6px;
+          pointer-events: auto;
+          cursor: pointer;
         }
         .sc-right-nav .sc-nav-dot {
           width: 16px;
@@ -354,27 +558,116 @@ export default function AboutMe() {
         .sc-right-nav .sc-nav-arrow.left  { animation: sc-arrow-left  0.8s ease-in-out infinite; }
         .sc-right-nav .sc-nav-arrow.right { animation: sc-arrow-right 0.8s ease-in-out infinite; }
 
+        /* Slanted band of the member's colour behind the shoulders. */
+        .sc-portrait-band {
+          position: absolute;
+          inset: 0;
+          background: var(--member);
+          clip-path: polygon(0 34%, 46% 6%, 64% 6%, 14% 100%, 0 100%);
+          opacity: 0.9;
+        }
+        /* The whole bust (head to chest), standing on the bottom edge. */
         .sc-main-portrait {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: top right;
-          transform: skewX(8deg) scale(1.08);
-          transform-origin: top right;
+          position: absolute;
+          bottom: 0;
+          /* The face lands at the middle of the panel, whatever the bust's
+             width or the window's shape. */
+          left: calc(50% - var(--face) * 90vh);
+          height: 90vh;
+          width: auto;
+          max-width: none;
+          transform: skewX(8deg);
+          transform-origin: bottom right;
+        }
+
+        .sc-corner {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          width: 36vw;
+          height: 40vh;
+          z-index: 14;
+          pointer-events: none;
+          background: #23262c;
+          clip-path: polygon(100% 0, 100% 100%, 0 100%);
+          animation: sc-corner-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .sc-corner::after {
+          content: "";
+          position: absolute;
+          inset: 7px 0 0 12px;
+          background: linear-gradient(160deg, #a3a8b0 0%, #6f747d 100%);
+          clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        }
+        /* The key hints sit on the grey corner: plain dark text reads there. */
+        .sc-corner ~ .key-hints { mix-blend-mode: normal; color: #15171b; }
+        @keyframes sc-corner-in {
+          from { transform: translate(30%, 30%); }
+          to   { transform: translate(0, 0); }
+        }
+
+        .sc-role-badge {
+          position: absolute;
+          right: 5vw;
+          bottom: 19vh;
+          z-index: 15;
+          display: flex;
+          align-items: center;
+          gap: calc(var(--badge) * 0.22);
+          --badge: clamp(30px, 7vh, 72px);
+          padding: calc(var(--badge) * 0.12) calc(var(--badge) * 0.5) calc(var(--badge) * 0.1) calc(var(--badge) * 0.3);
+          background: #141414;
+          clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%);
+          transform: rotate(-4deg);
+          pointer-events: none;
+          animation: sc-badge-in 0.35s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        /* Two red squares touching at one corner. */
+        .sc-role-badge-mark {
+          width: calc(var(--badge) * 0.62);
+          height: calc(var(--badge) * 0.62);
+          flex-shrink: 0;
+          background:
+            linear-gradient(#e8202a, #e8202a) top right / 50% 50% no-repeat,
+            linear-gradient(#e8202a, #e8202a) bottom left / 50% 50% no-repeat;
+        }
+        .sc-role-badge-text {
+          font-family: 'Saira Condensed', 'Anton', sans-serif;
+          font-weight: 900;
+          font-size: var(--badge);
+          line-height: 1;
+          color: #e8202a;
+          transform: skewX(-12deg);
+        }
+        @keyframes sc-badge-in {
+          from { opacity: 0; transform: translateX(40px) rotate(-4deg); }
+          to   { opacity: 1; transform: rotate(-4deg); }
         }
 
         /* ── Each bar ── */
         .sc-bar {
           position: relative;
           width: 45vw;
-          height: 64px;
+          height: var(--bar);
           transition: height 0.3s cubic-bezier(0.22,1,0.36,1);
+          z-index: 1;
+          /* Where the portrait's nose sits, measured from the left edge. */
+          --nose: calc(var(--bar) * 2.25);
+        }
+
+        /* The black slab. It is a layer of its own so the portrait can stick
+           out past its left edge. */
+        .sc-bar-bg {
+          position: absolute;
+          inset: 0;
           background: #111;
           cursor: pointer;
           pointer-events: all;
           clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
-          box-shadow: 0 6px 24px rgba(0,0,0,0.65);
-          z-index: 1;
+        }
+        /* No role: nothing left of the face, the slab starts at the nose. */
+        .sc-bar-outer.no-role .sc-bar-bg {
+          clip-path: polygon(calc(var(--nose) + 6px) 0, 100% 0, calc(100% - 14px) 100%, calc(var(--nose) - 6px) 100%);
         }
 
         /* wrapper holds both the red underlay and the bar */
@@ -384,19 +677,16 @@ export default function AboutMe() {
           transform: translateX(-100%);
           transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .sc-bar-outer.active .sc-bar     { height: 90px; }
-        .sc-bar-outer.active .sc-bar-red { height: 90px; }
+        .sc-bar-outer.active .sc-bar     { height: var(--bar-active); }
+        .sc-bar-outer.active .sc-bar-red { height: var(--bar-active); }
         .sc-bar-outer.mounted { transform: translateX(0); }
-        .sc-bar-outer:nth-child(1) { transition-delay: 0ms; }
-        .sc-bar-outer:nth-child(2) { transition-delay: 80ms; }
-        .sc-bar-outer:nth-child(3) { transition-delay: 160ms; }
 
         /* red underlay — peeks out below the bar when active */
         .sc-bar-red {
           position: absolute;
           top: 0; left: 0;
           width: 45vw;
-          height: 64px;
+          height: var(--bar);
           background: #c4001a;
           clip-path: polygon(50% 0, 100% 0, 100% 100%, calc(50% - 10px) 100%);
           transform: translateY(-7px);
@@ -417,8 +707,9 @@ export default function AboutMe() {
           transition: clip-path 0.35s cubic-bezier(0.22, 1, 0.36, 1);
           z-index: 0;
         }
+        /* Selected: white from the face to the right end, as in the game. */
         .sc-bar-outer.active .sc-bar-fill {
-          clip-path: polygon(22% 0, 100% 0, calc(100% - 14px) 100%, calc(22% + 138px) 100%);
+          clip-path: polygon(calc(var(--nose) + 6px) 0, 100% 0, calc(100% - 14px) 100%, calc(var(--nose) - 6px) 100%);
         }
 
         /* shade on the left edge of the white fill */
@@ -445,6 +736,7 @@ export default function AboutMe() {
           z-index: 10;
           pointer-events: none;
         }
+        .sc-bar-outer.no-role .sc-bar::after { left: var(--nose); }
 
         /* content layout inside each bar */
         .sc-bar-content {
@@ -455,6 +747,8 @@ export default function AboutMe() {
           align-items: center;
           justify-content: space-between;
           padding: 0 20px 0 20px;
+          /* The slanted role word is taller than the bar: cut it at the edges. */
+          overflow: hidden;
         }
 
         /* left: role label */
@@ -462,14 +756,56 @@ export default function AboutMe() {
           display: flex;
           align-items: center;
           flex-shrink: 0;
-          font-family: 'Anton', sans-serif;
-          font-size: 50px;
-          letter-spacing: -2px;
+          /* Free stand-in for the game's own (licensed) lettering. */
+          font-family: 'Saira Condensed', 'Anton', sans-serif;
+          font-weight: 900;
+          font-size: calc(var(--bar) * 0.8);
+          letter-spacing: -1px;
           color: #ffffff;
-          transform: rotate(-30deg);
           user-select: none;
           line-height: 1;
+          white-space: nowrap;
+          /* Same width whatever the word (or none), so every label lines up. */
+          width: calc(var(--bar) * 1.72);
           padding: 0 16px 0 8px;
+        }
+        .sc-role span {
+          display: inline-block;
+          transform: rotate(-30deg);
+          animation: sc-role-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes sc-role-in {
+          from { opacity: 0; transform: translateX(-60%) rotate(-30deg); }
+          to   { opacity: 1; transform: rotate(-30deg); }
+        }
+
+        /* Joining or leaving the party grows or cuts the slab on the left. */
+        .sc-bar-bg { transition: clip-path 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+
+        /* Flash on a bar that can't join because the party is full. */
+        .sc-full {
+          position: absolute;
+          top: 50%;
+          right: 36px;
+          z-index: 11;
+          padding: 3px 10px 1px;
+          background: #c4001a;
+          color: #fff;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: calc(var(--bar) * 0.34);
+          letter-spacing: 2px;
+          line-height: 1;
+          pointer-events: none;
+          user-select: none;
+          animation: sc-full 1.2s ease both;
+        }
+        @keyframes sc-full {
+          0%   { opacity: 0; transform: translate(-8px, -50%); }
+          10%  { opacity: 1; transform: translate(6px, -50%); }
+          18%  { transform: translate(-4px, -50%); }
+          26%  { transform: translate(0, -50%); }
+          80%  { opacity: 1; }
+          100% { opacity: 0; transform: translate(0, -50%); }
         }
 
         /* left: icon + name centered in remaining space */
@@ -502,7 +838,7 @@ export default function AboutMe() {
 
         .sc-label {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 28px;
+          font-size: calc(var(--bar) * 0.44);
           letter-spacing: 4px;
           line-height: 1;
           color: rgba(255,255,255,0.85);
@@ -576,76 +912,65 @@ export default function AboutMe() {
         .sc-char {
           position: absolute;
           top: 0;
-          left: 110px;
+          left: var(--nose);
           height: 100%;
           width: auto;
-          max-width: 160px;
-          object-fit: cover;
-          object-position: top;
+          /* The nose is 64px into the 310px-wide image: keep it on --nose
+             whatever the bar height, so the face does not slide when it grows. */
+          transform: translateX(-20.65%);
           pointer-events: none;
+          user-select: none;
           z-index: 3;
-          clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
+        }
+        /* Shadow of the face on the backdrop, where no slab is behind it. */
+        .sc-bar-outer.no-role .sc-char {
+          filter: drop-shadow(-6px 0 0 rgba(0, 24, 90, 0.5));
         }
 
-        /* footer hints */
-        .sc-footer {
-          position: fixed;
-          bottom: 20px; right: 28px;
-          display: flex; flex-direction: column;
-          align-items: flex-end; gap: 5px;
-          font-family: 'Bebas Neue', sans-serif;
-          z-index: 14;
-          opacity: 0;
-          transition: opacity 0.4s ease 0.6s;
-        }
-        .sc-footer.mounted { opacity: 1; }
-        .sc-footer-row {
-          display: flex; align-items: center; gap: 8px;
-          font-size: 13px; letter-spacing: 2px;
-          color: rgba(255,255,255,0.22);
-        }
-        .sc-footer-key {
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 3px;
-          padding: 1px 6px; font-size: 11px;
-        }
       `}</style>
 
-      <div className="sc-root" role="navigation">
-        {ITEMS.map((item, i) => (
+      <div className={`sc-root${revealed ? " revealed" : ""}`} role="navigation">
+        {PARTY.map((item, i) => {
+          const role = roleOf(item);
+          return (
           <div
             key={item.id}
-            className={`sc-bar-outer${active === i ? " active" : ""}${mounted ? " mounted" : ""}`}
+            className={`sc-bar-outer${role ? "" : " no-role"}${active === i ? " active" : ""}${mounted ? " mounted" : ""}`}
+            // Each bar slides in a little after the one above it.
+            style={{ transitionDelay: `${i * 50}ms` }}
             onClick={() => {
               setActive(i);
             }}
             onMouseEnter={() => {
+              if (i !== active) play("cursor");
               setActive(i);
             }}
           >
             <div className="sc-bar-red" />
             <div className="sc-bar">
-              <img className="sc-char" src={CHARS[i]} alt="" />
+              <div className="sc-bar-bg" />
               <div className="sc-bar-fill" />
               <div className="sc-bar-shade" />
+              <img className="sc-char" src={item.profile} alt="" />
               <div className="sc-bar-content">
-                <div className="sc-role">{ROLES[i].text}</div>
+                {/* keyed by role, so a member who joins gets the label animation */}
+                <div className="sc-role"><span key={role}>{role}</span></div>
                 <div className="sc-main">
                   <div className="sc-main-top">
-                    <div className="sc-label">{item.label}</div>
+                    <div className="sc-label">{item[LANG].label}</div>
                   </div>
                 </div>
               </div>
+              {denied?.index === i && (
+                <div key={denied.n} className="sc-full">PARTY FULL</div>
+              )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className={`sc-footer${mounted ? " mounted" : ""}`}>
-        <div className="sc-footer-row"><span className="sc-footer-key">↑↓</span><span>SELECT</span></div>
-        <div className="sc-footer-row"><span className="sc-footer-key">↵</span><span>REVEAL</span></div>
-        <div className="sc-footer-row"><span className="sc-footer-key">ESC</span><span>BACK</span></div>
-      </div>
+      <KeyHints keys={revealed ? [["A D", "SWITCH"], ["ESC", "CLOSE"]] : [["↑↓", "SELECT"], ["↵", "REVEAL"], ["SPACE", `PARTY ${party.length}/${PARTY_SIZE}`], ["ESC", "BACK"]]} />
     </div>
   );
 }

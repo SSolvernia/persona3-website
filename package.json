@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:watch": "node scripts/watch-build.mjs",
     "lint": "eslint .",
+    "media": "bash scripts/optimize-media.sh",
     "preview": "vite preview"
   },
   "dependencies": {

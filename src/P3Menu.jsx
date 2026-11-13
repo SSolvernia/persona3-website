@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import KeyHints from "./KeyHints";
+import { play } from "./sound";
 
 const ITEMS = [
   { id: "about",   label: "ABOUT ME",      page: "about",   fontSize: 80, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
   { id: "resume",  label: "RESUME",        page: "resume",  fontSize: 66, offsetX: 20, offsetY: 8,  skew: -11, skewY: -10 },
-  { id: "github",  label: "GITHUB LINK",   page: "github",  fontSize: 68, offsetX: 8, offsetY: 6,  skew: 0, skewY: -4  },
+  { id: "github",  label: "GITHUB LINK",   href: "https://github.com/SSolvernia", fontSize: 68, offsetX: 8, offsetY: 6,  skew: 0, skewY: -4  },
   { id: "socials", label: "SOCIALS",       page: "socials", fontSize: 74, offsetX: 16, offsetY: 8,  skew: -3,  skewY: 5   },
-  { id: "sideproj",label: "SIDE PROJECTS", page: "sideproj",fontSize: 56, offsetX: 10, offsetY: 6,  skew: -4,  skewY: 7   },
+  { id: "sideproj",label: "SIDE PROJECTS", page: "projects",fontSize: 56, offsetX: 10, offsetY: 6,  skew: -4,  skewY: 7   },
 ];
 
 const CLIP_SHAPES = [
@@ -21,7 +23,19 @@ export default function P3Menu({ onNavigate }) {
   const [mounted, setMounted] = useState(false);
   const [animKey, setAnimKey] = useState(0);
 
+  // Items with an href open in a new tab; the rest are pages of this site.
+  const open = (item) => {
+    if (item.href) {
+      play("confirm");
+      window.open(item.href, "_blank", "noopener");
+    } else {
+      play("open");
+      onNavigate?.(item.page);
+    }
+  };
+
   const activate = (idx) => {
+    if (idx !== active) play("cursor");
     setActive(idx);
     setAnimKey(k => k + 1);
   };
@@ -35,7 +49,7 @@ export default function P3Menu({ onNavigate }) {
     const onKey = (e) => {
       if (e.key === "ArrowUp")   activate(Math.max(0, active - 1));
       if (e.key === "ArrowDown") activate(Math.min(ITEMS.length - 1, active + 1));
-      if (e.key === "Enter")     onNavigate?.(ITEMS[active].page);
+      if (e.key === "Enter")     open(ITEMS[active]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -168,28 +182,6 @@ export default function P3Menu({ onNavigate }) {
         }
         .p3-row.active .p3-label-bright { opacity: 1; }
 
-        .p3-hint {
-          position: absolute;
-          bottom: 24px; right: 28px;
-          z-index: 20;
-          display: flex; flex-direction: column;
-          align-items: flex-end; gap: 5px;
-          font-family: 'Anton', sans-serif;
-          opacity: 0;
-          transition: opacity 0.5s ease 0.9s;
-        }
-        .p3-hint.mounted { opacity: 1; }
-        .p3-hint-row {
-          display: flex; align-items: center; gap: 8px;
-          font-size: 13px; letter-spacing: 2px;
-          color: rgba(255,255,255,0.28);
-        }
-        .p3-hint-key {
-          border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 3px;
-          padding: 1px 6px; font-size: 11px;
-        }
-
         .p3-name-tag {
           position: absolute;
           top: 18px;
@@ -216,7 +208,7 @@ export default function P3Menu({ onNavigate }) {
 
       <div className="p3-overlay">
         <div className="p3-name-tag">
-          <span>jade's</span>
+          <span>Shiru's</span>
           <span>persona</span>
         </div>
         <div className="p3-stripe" />
@@ -241,7 +233,7 @@ export default function P3Menu({ onNavigate }) {
                   marginTop: item.offsetY,
                   transitionDelay: mounted ? `${i * 80}ms` : "0ms",
                 }}
-                onClick={(e) => { e.preventDefault(); onNavigate?.(item.page); }}
+                onClick={(e) => { e.preventDefault(); open(item); }}
                 onMouseEnter={() => activate(i)}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -288,10 +280,7 @@ export default function P3Menu({ onNavigate }) {
           })}
         </nav>
 
-        <div className={`p3-hint ${mounted ? "mounted" : ""}`}>
-          <div className="p3-hint-row"><span className="p3-hint-key">↑↓</span><span>NAVIGATE</span></div>
-          <div className="p3-hint-row"><span className="p3-hint-key">↵</span><span>CONFIRM</span></div>
-        </div>
+        <KeyHints keys={[["↑↓", "NAVIGATE"], ["↵", "CONFIRM"]]} />
       </div>
     </>
   );

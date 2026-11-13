@@ -1,24 +1,76 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { resumeBg } from "./media";
+import { play } from "./sound";
+import BgVideo from "./BgVideo";
+import KeyHints from "./KeyHints";
 
+// One card per section. `rows` fill the panel that opens beside the selected
+// card (title + a short status tag) and `details` its bullet list. RANK on a
+// card is how many rows the section has.
 const ITEMS = [
-  { id: "i", badge: "I", title: "EDUCATION", subtitle: "University / Coursework", rank: 3 },
-  { id: "ii", badge: "II", title: "SKILLS", subtitle: "Frontend / Design / UI", rank: 4 },
-  { id: "iii", badge: "III", title: "PROJECTS", subtitle: "Featured Work", rank: 5 },
-  { id: "iv", badge: "IV", title: "EXPERIENCE", subtitle: "Internships / Roles", rank: 2 },
+  {
+    id: "education", badge: "I", title: "EDUCATION", subtitle: "Law / Programming", log: "EDUCATION LOG",
+    rows: [
+      { title: "Law: lawyer in Colombia", status: "Complete" },
+      { title: "Programming: 4 years of practice", status: "Ongoing" },
+      { title: "New technologies", status: "Always" },
+    ],
+    details: [
+      "Trained and practiced as a lawyer in Colombia.",
+      "Moved into software and has been programming for 4 years.",
+      "Keeps learning new tools and technologies as they come.",
+    ],
+  },
+  {
+    id: "skills", badge: "II", title: "SKILLS", subtitle: "HTML / CSS / JS / React", log: "SKILL LIST",
+    rows: [
+      { title: "HTML, CSS & JavaScript", status: "Front-end" },
+      { title: "React", status: "Framework" },
+      { title: "Next.js", status: "Framework" },
+      { title: "Vite", status: "Tooling" },
+      { title: "LLMs: local & Claude", status: "AI" },
+    ],
+    details: [
+      "Builds web interfaces with HTML, CSS, JavaScript and React.",
+      "Ships apps with Next.js and Vite.",
+      "Runs language models locally and works with hosted ones like Claude.",
+    ],
+  },
+  {
+    id: "projects", badge: "III", title: "PROJECTS", subtitle: "Side projects", log: "PROJECT LOG",
+    rows: [
+      { title: "Compendio D&D 2024", status: "Live" },
+      { title: "UnsubTracker", status: "Live" },
+      { title: "Pollanzas Personales", status: "Live" },
+      { title: "This site", status: "React + Vite" },
+    ],
+    details: [
+      "Compendio D&D: spells, classes and a character sheet for D&D 2024, in Spanish.",
+      "UnsubTracker: tracks and manages all your subscriptions in one place.",
+      "Pollanzas Personales: keeps track of income and expenses month by month.",
+    ],
+  },
+  {
+    id: "experience", badge: "IV", title: "EXPERIENCE", subtitle: "Eventtia / Law", log: "WORK LOG",
+    rows: [
+      { title: "Front-end developer, Eventtia Inc.", status: "Current" },
+      { title: "Lawyer, Colombia", status: "4 years" },
+    ],
+    details: [
+      "Front-end development at Eventtia Inc.",
+      "4 years of programming experience.",
+      "4 years practicing law in Colombia before moving into software.",
+    ],
+  },
 ];
 
-const EDUCATION_ROWS = [
-  { index: "01", title: "General Education", status: "Complete" },
-  { index: "02", title: "Computer Science Core", status: "In Progress" },
-  { index: "03", title: "Elective Track", status: "Queued" },
-  { index: "04", title: "Capstone Prep", status: "Pending" },
-];
-
-export default function ResumePage({ src }) {
+export default function ResumePage() {
   const navigate = useNavigate();
-  const [active, setActive] = useState(1);
+  const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
+  // The detail panel on the right stays closed until the visitor opens it.
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 80);
@@ -27,49 +79,36 @@ export default function ResumePage({ src }) {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "ArrowUp") setActive((i) => Math.max(0, i - 1));
-      if (e.key === "ArrowDown") setActive((i) => Math.min(ITEMS.length - 1, i + 1));
-      if (e.key === "ArrowLeft") navigate(-1);
-      if (e.key === "Escape" || e.key === "Backspace") navigate(-1);
+      const select = (i) => {
+        if (i !== active) play("cursor");
+        setActive(i);
+      };
+      if (e.key === "ArrowUp") select(Math.max(0, active - 1));
+      if (e.key === "ArrowDown") select(Math.min(ITEMS.length - 1, active + 1));
+      if ((e.key === "Enter" || e.key === "ArrowRight") && !open) {
+        play("show");
+        setOpen(true);
+      }
+      // Back closes the panel first; only with it closed does it leave the page.
+      if (e.key === "ArrowLeft" || e.key === "Escape" || e.key === "Backspace") {
+        if (open) {
+          play("hide");
+          setOpen(false);
+        } else {
+          play("back");
+          navigate(-1);
+        }
+      }
     };
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [navigate]);
+  }, [active, navigate, open]);
 
   return (
     <div id="menu-screen">
-      <video src={src} autoPlay loop muted playsInline />
-      <div className="resume-entry-mask" aria-hidden="true">
-        <video className="resume-entry-video" src={src} autoPlay loop muted playsInline />
-      </div>
+      <BgVideo media={resumeBg} />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&display=swap');
-
-        .resume-entry-mask {
-          position: absolute;
-          inset: 0;
-          z-index: 9;
-          overflow: hidden;
-          background: #0047FF;
-          clip-path: circle(0 at 50% 50%);
-          animation: resume-entry-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          pointer-events: none;
-        }
-
-        .resume-entry-video {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        @keyframes resume-entry-reveal {
-          from { clip-path: circle(0 at 50% 50%); }
-          to { clip-path: circle(150vmax at 50% 50%); }
-        }
-
         .resume-overlay {
           position: absolute;
           inset: 0;
@@ -144,32 +183,46 @@ export default function ResumePage({ src }) {
           justify-content: space-between;
         }
 
+        /* The badge is a slanted plate with an outline: the outline colour
+           fills it, and an inner layer of the same shape, 3px smaller, fills
+           the middle (a CSS border would be cut by the slant). */
         .resume-badge {
           position: absolute;
           top: 10px;
           left: -10px;
+          z-index: 2;
           width: 56px;
           height: 70px;
-          background: #0b113d;
-          border: 3px solid #9cf7ff;
-          clip-path: polygon(14% 0, 100% 0, 84% 100%, 0 100%);
+          background: #9cf7ff;
+          clip-path: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           transform: rotate(-8deg);
-          box-shadow: 0 4px 0 rgba(0,0,0,0.28);
-          transition: background 0.22s ease, border-color 0.22s ease;
+          transition: transform 0.22s ease, background 0.22s ease;
+        }
+        .resume-badge::before {
+          content: "";
+          position: absolute;
+          inset: 3px;
+          background: #0b113d;
+          clip-path: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
+          transition: background 0.22s ease;
+        }
+        .resume-card-wrap.active .resume-badge {
+          transform: translateX(6px) rotate(-8deg);
         }
         .resume-badge-text {
+          position: relative;
           font-family: 'Bebas Neue', sans-serif;
           font-size: 36px;
           color: #d2fdff;
           letter-spacing: 1px;
           transform: rotate(8deg);
         }
-        .resume-card-wrap.active .resume-badge {
+        .resume-card-wrap.active .resume-badge,
+        .resume-card-wrap.active .resume-badge::before {
           background: #000;
-          border-color: #000;
         }
         .resume-card-wrap.active .resume-badge-text {
           color: #fff;
@@ -368,6 +421,24 @@ export default function ResumePage({ src }) {
           color: #edfaff;
         }
 
+        /* Laptop-height windows: tighter panel so the longest section fits. */
+        @media (max-height: 900px) {
+          .resume-detail-panel { padding: 16px 20px 18px; }
+          .resume-detail-top { min-height: 64px; }
+          .resume-detail-top-index { font-size: 34px; }
+          .resume-detail-top-title,
+          .resume-detail-top-progress { font-size: 32px; }
+          .resume-detail-list { gap: 6px; margin-top: 12px; }
+          .resume-detail-row { min-height: 42px; }
+          .resume-detail-row-index { font-size: 20px; }
+          .resume-detail-row-title { font-size: 22px; }
+          .resume-detail-status { font-size: 16px; padding: 5px 10px; }
+          .resume-detail-bottom { margin-top: 14px; padding: 12px 14px; }
+          .resume-detail-bottom-title { font-size: 22px; margin-bottom: 8px; }
+          .resume-detail-bullets { gap: 6px; }
+          .resume-detail-bullet { font-size: 17px; }
+        }
+
       `}</style>
 
       <div className="resume-overlay">
@@ -379,21 +450,27 @@ export default function ResumePage({ src }) {
               className={`resume-card-wrap${active === index ? " active" : ""}${mounted ? " mounted" : ""}`}
               style={{ transitionDelay: `${index * 55}ms` }}
               onMouseEnter={() => {
+                if (index !== active) play("cursor");
                 setActive(index);
               }}
               onClick={() => {
                 setActive(index);
+                if (!open) {
+                  play("show");
+                  setOpen(true);
+                }
               }}
             >
+              {/* Outside the card, which is clipped to its slanted shape. */}
+              <div className="resume-badge">
+                <div className="resume-badge-text">{item.badge}</div>
+              </div>
               <div className="resume-card">
-                <div className="resume-badge">
-                  <div className="resume-badge-text">{item.badge}</div>
-                </div>
                 <div className="resume-card-inner">
                   <div className="resume-title">{item.title}</div>
                   <div className="resume-rank">
                     <div className="resume-rank-label">RANK</div>
-                    <div className="resume-rank-number">{item.rank}</div>
+                    <div className="resume-rank-number">{item.rows.length}</div>
                   </div>
                 </div>
                 <div className="resume-subtitle-bar">
@@ -404,36 +481,37 @@ export default function ResumePage({ src }) {
           ))}
         </div>
 
-        {active === 0 && (
-          <div className="resume-detail-panel">
-            <div className="resume-detail-top">
-              <div className="resume-detail-top-index">01</div>
-              <div className="resume-detail-top-title">EDUCATION LOG</div>
-              <div className="resume-detail-top-progress">7/5</div>
-            </div>
+        {open && (
+        <div className="resume-detail-panel" key={ITEMS[active].id}>
+          <div className="resume-detail-top">
+            <div className="resume-detail-top-index">{String(active + 1).padStart(2, "0")}</div>
+            <div className="resume-detail-top-title">{ITEMS[active].log}</div>
+            <div className="resume-detail-top-progress">{ITEMS[active].rows.length}</div>
+          </div>
 
-            <div className="resume-detail-list">
-              {EDUCATION_ROWS.map((row) => (
-                <div className="resume-detail-row" key={row.index}>
-                  <div className="resume-detail-row-index">{row.index}</div>
-                  <div className="resume-detail-row-title">{row.title}</div>
-                  <div className="resume-detail-status">{row.status}</div>
-                </div>
+          <div className="resume-detail-list">
+            {ITEMS[active].rows.map((row, i) => (
+              <div className="resume-detail-row" key={row.title}>
+                <div className="resume-detail-row-index">{String(i + 1).padStart(2, "0")}</div>
+                <div className="resume-detail-row-title">{row.title}</div>
+                <div className="resume-detail-status">{row.status}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="resume-detail-bottom">
+            <div className="resume-detail-bottom-title">DETAILS</div>
+            <div className="resume-detail-bullets">
+              {ITEMS[active].details.map((line) => (
+                <div className="resume-detail-bullet" key={line}>- {line}</div>
               ))}
             </div>
-
-            <div className="resume-detail-bottom">
-              <div className="resume-detail-bottom-title">DETAILS</div>
-              <div className="resume-detail-bullets">
-                <div className="resume-detail-bullet">- Maintain progress across required classes and supporting work.</div>
-                <div className="resume-detail-bullet">- Track portfolio-ready projects tied to coursework and labs.</div>
-                <div className="resume-detail-bullet">- Keep materials prepared for internships, research, and review.</div>
-              </div>
-            </div>
           </div>
+        </div>
         )}
 
       </div>
+      <KeyHints keys={open ? [["↑↓", "SELECT"], ["ESC", "CLOSE"]] : [["↑↓", "SELECT"], ["↵", "OPEN"], ["ESC", "BACK"]]} />
     </div>
   );
 }

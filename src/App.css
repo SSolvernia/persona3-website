@@ -24,7 +24,77 @@ body {
   object-fit: cover;
 }
 
+.sound-toggle {
+  position: fixed;
+  bottom: 20px;
+  left: 28px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: 'Anton', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  /* The backgrounds go from white to navy in this corner; "difference"
+     keeps the label readable on both. */
+  color: #fff;
+  mix-blend-mode: difference;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.sound-toggle:hover {
+  opacity: 0.85;
+}
+
+.sound-toggle-key {
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
 #main {
   width: 100vw;
   height: 100vh;
+}
+
+/* Key reminders (src/KeyHints.jsx). The backdrops mix white and dark areas,
+   so the "difference" blend keeps them readable on either. */
+.key-hints {
+  position: fixed;
+  bottom: 20px;
+  right: 28px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  font-family: 'Bebas Neue', sans-serif;
+  color: #fff;
+  mix-blend-mode: difference;
+  opacity: 0.85;
+  pointer-events: none;
+  animation: key-hints-in 0.4s ease 0.6s both;
+}
+.key-hints-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+.key-hints-key {
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+@keyframes key-hints-in {
+  from { opacity: 0; }
+  to   { opacity: 0.85; }
 }

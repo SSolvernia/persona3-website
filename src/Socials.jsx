@@ -1,55 +1,51 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import char1 from "./assets/char1.png";
-import char2 from "./assets/char2.png";
-import char3 from "./assets/char3.png";
-import bgVideo from "./assets/main3.mp4";
-import newsign from "./assets/newsign.png";
-import icon1 from "./assets/icon1.png";
-import icon2 from "./assets/icon2.png";
-import icon3 from "./assets/icon3.png";
+import { socialsBg } from "./media";
+import { play } from "./sound";
+import BgVideo from "./BgVideo";
+import KeyHints from "./KeyHints";
+import makotoProfile from "./assets/makoto-profile.webp";
+import junpeiProfile from "./assets/junpei-profile.webp";
+import yukariProfile from "./assets/yukari-profile.webp";
+import akihikoProfile from "./assets/akihiko-profile.webp";
+import iconItem from "./assets/icon-item.webp";
+import iconSkill from "./assets/icon-skill.webp";
+import iconGear from "./assets/icon-gear.webp";
+import iconPlant from "./assets/icon-plant.webp";
 
-const CHARS = [char1, char2, char3];
-
-const ROLES = [
-  { text: "LEADER", color: "#e8c100", bg: "rgba(232,193,0,0.12)", border: "rgba(232,193,0,0.5)" },
-  { text: "PARTY",  color: "#4a8fff", bg: "rgba(74,143,255,0.12)", border: "rgba(74,143,255,0.5)" },
-  { text: "PARTY",  color: "#4a8fff", bg: "rgba(74,143,255,0.12)", border: "rgba(74,143,255,0.5)" },
-];
-
+// One row per network, top to bottom:
+//   label    name on the bar
+//   role     slanted word at the left of the bar
+//   profile  portrait on the bar
+//   handle   account name, shown on the bar and in the row on the right
+//   icon     small icon of the row on the right
+//   href     profile page that Enter / a click opens. Without it (Discord has
+//            no public profile link) Enter copies the handle instead.
 const ITEMS = [
-  {
-    id: "twitch", label: "TWITCH", handle: "@yourname", href: "https://twitch.tv/yourname", icon: "🎮", barIcon: icon1, bars: 1, newBars: [0], counts: ["56"],
-    links: ["twitch.tv/videos/2041837265"],
-    stats: [
-      { tag: "FOL", value: "1.2K", color: "#9147ff" },
-      { tag: "VWR", value: "042",  color: "#bf94ff" },
-    ],
-  },
-  {
-    id: "instagram", label: "INSTAGRAM", handle: "@yourhandle", href: "https://instagram.com/yourhandle", icon: "📷", barIcon: icon2, bars: 5, newBars: [1, 2], counts: ["3.4M", "2.5M", "676K", "412K", "198K"],
-    links: ["instagram.com/p/C4xQmRrNk2a", "instagram.com/p/C3wLpBsOj7f", "instagram.com/reel/C2vKoArMi6e", "instagram.com/p/C1uJnZqLh5d", "instagram.com/reel/C0tImYpKg4c"],
-    stats: [
-      { tag: "FOL", value: "3.4K", color: "#e1306c" },
-      { tag: "PST", value: "128",  color: "#f77737" },
-    ],
-  },
-  {
-    id: "tiktok", label: "TIKTOK", handle: "@yourhandle", href: "https://tiktok.com/@yourhandle", icon: "🎵", barIcon: icon3, bars: 7, newBars: [0, 3, 5, 6], counts: ["5.1M", "3.7M", "2.2M", "1.4M", "831K", "490K", "217K"],
-    links: ["tiktok.com/@yourhandle/video/7318492016374859054", "tiktok.com/@yourhandle/video/7305837261940183342", "tiktok.com/@yourhandle/video/7291046385720348974", "tiktok.com/@yourhandle/video/7278392047163820334", "tiktok.com/@yourhandle/video/7264819203847165742", "tiktok.com/@yourhandle/video/7251047382916430126", "tiktok.com/@yourhandle/video/7237294018463851822"],
-    stats: [
-      { tag: "FOL", value: "8.9K", color: "#00f2ea" },
-      { tag: "LKS", value: "52K",  color: "#ff0050" },
-    ],
-  },
+  { id: "instagram", label: "INSTAGRAM", role: "LEADER", profile: makotoProfile,  handle: "@ssolvernia",     icon: iconSkill, href: "https://www.instagram.com/ssolvernia/" },
+  { id: "facebook",  label: "FACEBOOK",  role: "PARTY",  profile: junpeiProfile,  handle: "shirujdx",        icon: iconItem,  href: "https://www.facebook.com/shirujdx/" },
+  { id: "discord",   label: "DISCORD",   role: "PARTY",  profile: yukariProfile,  handle: "Shiru",           icon: iconGear },
+  { id: "youtube",   label: "YOUTUBE",   role: "PARTY",  profile: akihikoProfile, handle: "@ShiruSolvernia", icon: iconPlant, href: "https://www.youtube.com/@ShiruSolvernia" },
 ];
 
 export default function Socials() {
   const [active, setActive]               = useState(0);
   const [mounted, setMounted]             = useState(false);
-  const [activeInfoBar, setActiveInfoBar] = useState(0);
   const [focus, setFocus]                 = useState("left"); // "left" | "right"
+  const [copied, setCopied]               = useState(null);   // id of a handle just copied
   const navigate = useNavigate();
+
+  // Opens the profile, or copies the handle when there is no link to open.
+  const open = (item) => {
+    play("confirm");
+    if (item.href) {
+      window.open(item.href, "_blank", "noopener");
+      return;
+    }
+    navigator.clipboard?.writeText(item.handle).catch(() => {});
+    setCopied(item.id);
+    setTimeout(() => setCopied((id) => (id === item.id ? null : id)), 1600);
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
@@ -58,19 +54,25 @@ export default function Socials() {
 
   useEffect(() => {
     const onKey = (e) => {
+      // Moves a selection and ticks only when it actually changes.
+      const move = (current, next, set) => {
+        if (next !== current) play("cursor");
+        set(next);
+      };
       if (focus === "left") {
-        if (e.key === "ArrowUp")    setActive(i => Math.max(0, i - 1));
-        if (e.key === "ArrowDown")  setActive(i => Math.min(ITEMS.length - 1, i + 1));
-        if (e.key === "ArrowRight") { setFocus("right"); setActiveInfoBar(0); }
-        if (e.key === "Enter")      window.open(ITEMS[active].href, "_blank");
-      } else {
-        const barCount = ITEMS[active].bars;
-        if (e.key === "ArrowUp")   setActiveInfoBar(i => Math.max(0, i - 1));
-        if (e.key === "ArrowDown") setActiveInfoBar(i => Math.min(barCount - 1, i + 1));
-        if (e.key === "ArrowLeft") setFocus("left");
-        if (e.key === "Enter")     window.open("https://" + ITEMS[active].links[activeInfoBar], "_blank");
+        if (e.key === "ArrowUp")    move(active, Math.max(0, active - 1), setActive);
+        if (e.key === "ArrowDown")  move(active, Math.min(ITEMS.length - 1, active + 1), setActive);
+        if (e.key === "ArrowRight") { play("tab"); setFocus("right"); }
+      } else if (e.key === "ArrowLeft") {
+        play("tab");
+        setFocus("left");
+        return;
       }
-      if ((e.key === "ArrowLeft" && focus === "left") || e.key === "Escape" || e.key === "Backspace") navigate(-1);
+      if (e.key === "Enter") open(ITEMS[active]);
+      if ((e.key === "ArrowLeft" && focus === "left") || e.key === "Escape" || e.key === "Backspace") {
+        play("back");
+        navigate(-1);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -78,10 +80,8 @@ export default function Socials() {
 
   return (
     <div id="menu-screen">
-      <video src={bgVideo} autoPlay loop muted playsInline />
+      <BgVideo media={socialsBg} />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,700;1,700&display=swap');
-
         .sc-root {
           position: absolute;
           inset: 0;
@@ -119,9 +119,6 @@ export default function Socials() {
         .sc-bar-outer.active .sc-bar     { height: 90px; }
         .sc-bar-outer.active .sc-bar-red { height: 90px; }
         .sc-bar-outer.mounted { transform: translateX(0); }
-        .sc-bar-outer:nth-child(1) { transition-delay: 0ms; }
-        .sc-bar-outer:nth-child(2) { transition-delay: 80ms; }
-        .sc-bar-outer:nth-child(3) { transition-delay: 160ms; }
 
         /* red underlay — peeks out below the bar when active */
         .sc-bar-red {
@@ -270,6 +267,21 @@ export default function Socials() {
         .sc-nav-arrow.right { animation: sc-arrow-right 0.8s ease-in-out infinite; }
 
         /* right: stats group */
+        /* right: account name */
+        .sc-handle {
+          flex-shrink: 0;
+          padding-right: 24px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 24px;
+          font-style: italic;
+          letter-spacing: 1px;
+          line-height: 1;
+          color: rgba(255,255,255,0.7);
+          transition: color 0.2s ease;
+          user-select: none;
+        }
+        .sc-bar-outer.active .sc-handle { color: #111; }
+
         .sc-stats {
           display: flex;
           align-items: center;
@@ -334,15 +346,12 @@ export default function Socials() {
         .sc-char {
           position: absolute;
           top: 0;
-          left: 110px;
+          left: 104px;
           height: 100%;
           width: auto;
-          max-width: 160px;
-          object-fit: cover;
-          object-position: top;
           pointer-events: none;
+          user-select: none;
           z-index: 3;
-          clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
         }
 
         /* right-side nav bar */
@@ -468,7 +477,7 @@ export default function Socials() {
           color: #fff;
           flex-shrink: 0;
           border-radius: 6px;
-          margin-right: 4px;
+          margin-right: 80px;
           user-select: none;
         }
 
@@ -492,28 +501,6 @@ export default function Socials() {
           user-select: none;
         }
 
-        /* footer hints */
-        .sc-footer {
-          position: fixed;
-          bottom: 20px; right: 28px;
-          display: flex; flex-direction: column;
-          align-items: flex-end; gap: 5px;
-          font-family: 'Bebas Neue', sans-serif;
-          z-index: 50;
-          opacity: 0;
-          transition: opacity 0.4s ease 0.6s;
-        }
-        .sc-footer.mounted { opacity: 1; }
-        .sc-footer-row {
-          display: flex; align-items: center; gap: 8px;
-          font-size: 13px; letter-spacing: 2px;
-          color: rgba(255,255,255,0.22);
-        }
-        .sc-footer-key {
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 3px;
-          padding: 1px 6px; font-size: 11px;
-        }
       `}</style>
 
       <div className="sc-root" role="navigation">
@@ -521,39 +508,29 @@ export default function Socials() {
           <div
             key={item.id}
             className={`sc-bar-outer${active === i ? " active" : ""}${mounted ? " mounted" : ""}`}
+            style={{ transitionDelay: `${i * 80}ms` }}
             onClick={() => {
-              if (active === i) window.open(item.href, "_blank");
+              if (active === i) open(item);
               else setActive(i);
             }}
-            onMouseEnter={() => setActive(i)}
+            onMouseEnter={() => {
+              if (i !== active) play("cursor");
+              setActive(i);
+            }}
           >
             <div className="sc-bar-red" />
             <div className="sc-bar">
-              <img className="sc-char" src={CHARS[i]} alt="" />
+              <img className="sc-char" src={item.profile} alt="" />
               <div className="sc-bar-fill" />
               <div className="sc-bar-shade" />
               <div className="sc-bar-content">
-                <div className="sc-role">{ROLES[i].text}</div>
+                <div className="sc-role">{item.role}</div>
                 <div className="sc-main">
                   <div className="sc-main-top">
-                    <div className="sc-icon">{item.icon}</div>
                     <div className="sc-label">{item.label}</div>
                   </div>
                 </div>
-                <div className="sc-stats">
-                  {item.stats.map(s => (
-                    <div className="sc-stat" key={s.tag}>
-                      <div className="sc-stat-top">
-                        <span className="sc-stat-tag" style={{ color: s.color, borderColor: s.color }}>{s.tag}</span>
-                        <span className="sc-stat-num">{s.value}</span>
-                      </div>
-                      <div className="sc-stat-bars">
-                        <div className="sc-stat-bar-color" style={{ background: s.color }} />
-                        <div className="sc-stat-bar-black" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="sc-handle">{item.handle}</div>
               </div>
             </div>
           </div>
@@ -570,31 +547,26 @@ export default function Socials() {
         </div>
       )}
 
-      {mounted && Array.from({ length: ITEMS[active].bars }).map((_, i) => (
+      {mounted && (
         <div
-          className={`sc-info-bar-wrap${activeInfoBar === i ? " selected" : ""}`}
-          key={`bar-${active}-${i}`}
-          style={{ top: `${155 + i * 52}px`, animationDelay: `${i * 50}ms` }}
-          onClick={() => setActiveInfoBar(i)}
-          onMouseEnter={() => setActiveInfoBar(i)}
+          className={`sc-info-bar-wrap${focus === "right" ? " selected" : ""}`}
+          key={`bar-${active}`}
+          style={{ top: "155px" }}
+          onClick={() => open(ITEMS[active])}
+          onMouseEnter={() => setFocus("right")}
+          onMouseLeave={() => setFocus("left")}
         >
-          {ITEMS[active].newBars.includes(i) && (
-            <img className="sc-info-bar-new" src={newsign} alt="" />
-          )}
           <div className="sc-info-bar">
-            <img className="sc-info-bar-icon" src={ITEMS[active].barIcon} alt="" />
-            <span className="sc-info-bar-text">{ITEMS[active].links[i].slice(0, 10)}...</span>
-            <span className="sc-info-bar-box">VIEWS</span>
-            <span className="sc-info-bar-count">{ITEMS[active].counts[i]}</span>
+            <img className="sc-info-bar-icon" src={ITEMS[active].icon} alt="" />
+            <span className="sc-info-bar-text">{ITEMS[active].handle}</span>
+            <span className="sc-info-bar-box">
+              {copied === ITEMS[active].id ? "COPIED" : ITEMS[active].href ? "OPEN" : "COPY"}
+            </span>
           </div>
         </div>
-      ))}
+      )}
 
-      <div className={`sc-footer${mounted ? " mounted" : ""}`}>
-        <div className="sc-footer-row"><span className="sc-footer-key">↑↓</span><span>SELECT</span></div>
-        <div className="sc-footer-row"><span className="sc-footer-key">↵</span><span>OPEN</span></div>
-        <div className="sc-footer-row"><span className="sc-footer-key">ESC</span><span>BACK</span></div>
-      </div>
+      <KeyHints keys={[["↑↓", "SELECT"], ["←→", "SWITCH"], ["↵", "OPEN"], ["ESC", "BACK"]]} />
     </div>
   );
 }
