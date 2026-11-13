@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import KeyHints from "./KeyHints";
 import { play } from "./sound";
+import { useLang } from "./lang";
 
 const ITEMS = [
-  { id: "about",   label: "ABOUT ME",      page: "about",   fontSize: 80, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
-  { id: "resume",  label: "RESUME",        page: "resume",  fontSize: 66, offsetX: 20, offsetY: 8,  skew: -11, skewY: -10 },
-  { id: "github",  label: "GITHUB LINK",   href: "https://github.com/SSolvernia", fontSize: 68, offsetX: 8, offsetY: 6,  skew: 0, skewY: -4  },
-  { id: "socials", label: "SOCIALS",       page: "socials", fontSize: 74, offsetX: 16, offsetY: 8,  skew: -3,  skewY: 5   },
-  { id: "sideproj",label: "SIDE PROJECTS", page: "projects",fontSize: 56, offsetX: 10, offsetY: 6,  skew: -4,  skewY: 7   },
+  { id: "about",   label: { en: "ABOUT ME", es: "SOBRE MÍ" },      page: "about",   fontSize: 80, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
+  { id: "resume",  label: { en: "RESUME", es: "CURRÍCULO" },        page: "resume",  fontSize: 66, offsetX: 20, offsetY: 8,  skew: -11, skewY: -10 },
+  { id: "github",  label: { en: "GITHUB LINK", es: "GITHUB" },   href: "https://github.com/SSolvernia", fontSize: 68, offsetX: 8, offsetY: 6,  skew: 0, skewY: -4  },
+  { id: "socials", label: { en: "SOCIALS", es: "REDES" },       page: "socials", fontSize: 74, offsetX: 16, offsetY: 8,  skew: -3,  skewY: 5   },
+  { id: "sideproj",label: { en: "SIDE PROJECTS", es: "PROYECTOS" }, page: "projects",fontSize: 56, offsetX: 10, offsetY: 6,  skew: -4,  skewY: 7   },
 ];
 
 const CLIP_SHAPES = [
@@ -22,6 +23,7 @@ export default function P3Menu({ onNavigate }) {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [animKey, setAnimKey] = useState(0);
+  const lang = useLang();
 
   // Items with an href open in a new tab; the rest are pages of this site.
   const open = (item) => {
@@ -184,7 +186,8 @@ export default function P3Menu({ onNavigate }) {
 
         .p3-name-tag {
           position: absolute;
-          top: 18px;
+          /* Below the language box in the corner. */
+          top: 96px;
           left: 22px;
           z-index: 20;
           font-family: 'Anton', sans-serif;
@@ -219,7 +222,8 @@ export default function P3Menu({ onNavigate }) {
             const isActive = active === i;
             const dist = Math.abs(i - active);
             const opacity = isActive ? 1 : Math.max(0.5, 1 - dist * 0.2);
-            const estW = item.label.length * item.fontSize * 0.6 + 80;
+            const label = item.label[lang];
+            const estW = label.length * item.fontSize * 0.6 + 80;
             const estH = item.fontSize * 0.94;
             const clipFn = CLIP_SHAPES[i] ?? CLIP_SHAPES[0];
 
@@ -262,7 +266,7 @@ export default function P3Menu({ onNavigate }) {
                   />
                   <div className="p3-label-wrap" style={{ opacity }}>
                     <span className="p3-label-base p3-label-dark" style={{ fontSize: item.fontSize }}>
-                      {item.label}
+                      {label}
                     </span>
                     <span
                       className="p3-label-base p3-label-bright"
@@ -271,7 +275,7 @@ export default function P3Menu({ onNavigate }) {
                         clipPath: clipFn(estW, estH),
                       }}
                     >
-                      {item.label}
+                      {label}
                     </span>
                   </div>
                 </div>

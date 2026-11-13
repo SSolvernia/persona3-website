@@ -1,8 +1,10 @@
 import { useSyncExternalStore } from 'react'
 import { isSoundOn, subscribeSound, toggleSound } from './sound'
+import { useLang } from './lang'
 
 export default function SoundToggle() {
   const on = useSyncExternalStore(subscribeSound, isSoundOn)
+  const lang = useLang()
 
   return (
     <button
@@ -20,7 +22,7 @@ export default function SoundToggle() {
       aria-keyshortcuts="M"
     >
       <span className="sound-toggle-key">M</span>
-      <span>SOUND {on ? 'ON' : 'OFF'}</span>
+      <span>{lang === 'es' ? on ? 'CON SONIDO' : 'SIN SONIDO' : `SOUND ${on ? 'ON' : 'OFF'}`}</span>
     </button>
   )
 }

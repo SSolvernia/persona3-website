@@ -5,6 +5,8 @@ import { menuIntro, menuLoop } from './media'
 import BgVideo from './BgVideo'
 import P3Menu from './P3Menu'
 import SoundToggle from './SoundToggle'
+import LangSelect from './LangSelect'
+import Disclaimer from './Disclaimer'
 import ResumePage from './ResumePage'
 import PageTransition from './PageTransition'
 import Socials from './Socials'
@@ -35,6 +37,7 @@ function MenuScreen() {
       {!isLooping && (
         <BgVideo media={menuIntro} loop={false} onEnded={handleIntroEnd} />
       )}
+      <LangSelect />
       <P3Menu onNavigate={(page) => navigate(`/${page}`)} />
     </div>
   )
@@ -70,6 +73,7 @@ export default function App() {
     <>
       <AnimatedRoutes />
       <SoundToggle />
+      <Disclaimer />
     </>
   )
 }

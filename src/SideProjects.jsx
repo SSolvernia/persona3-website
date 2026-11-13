@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sideProjectsBg } from "./media";
 import { play } from "./sound";
+import { useLang } from "./lang";
 import BgVideo from "./BgVideo";
 import KeyHints from "./KeyHints";
 import iconPlant from "./assets/icon-plant.webp";
@@ -17,8 +18,9 @@ import shotPollanzasAjustes from "./assets/shot-pollanzas-ajustes.webp";
 
 // One row per project, top to bottom. To add one, add a row here:
 //   name         text on the row and title of the card
-//   group        small label: the site or product it belongs to
-//   description  text of the card
+//   group        small label: the site or product it belongs to, in English
+//                and Spanish
+//   description  text of the card, in English and Spanish
 //   href         page that Enter / a click opens, in a new tab
 //   shots        captures shown on the card, in turn, on their own. Put each
 //                screenshot in media-src/projects/, add an `image shot-...`
@@ -28,24 +30,33 @@ const PROJECTS = [
   {
     id: "compendio",
     name: "Compendio D&D",
-    group: "Dungeons & Dragons 2024",
-    description: "Compendio de Dungeons & Dragons (reglas 2024) en español: biblioteca de conjuros y guías de clases.",
+    group: { en: "Dungeons & Dragons 2024", es: "Dungeons & Dragons 2024" },
+    description: {
+      en: "A Spanish compendium for Dungeons & Dragons (2024 rules): a spell library and class guides.",
+      es: "Compendio de Dungeons & Dragons (reglas 2024) en español: biblioteca de conjuros y guías de clases.",
+    },
     href: "https://compendio-dnd.losjuan.com/grimorio",
     shots: [shotGrimorio, shotGrimorioClases, shotGrimorioFicha],
   },
   {
     id: "unsub",
     name: "UnsubTracker",
-    group: "Suscripciones",
-    description: "Controla y gestiona todas tus suscripciones en un solo lugar.",
+    group: { en: "Subscriptions", es: "Suscripciones" },
+    description: {
+      en: "Track and manage all your subscriptions in one place.",
+      es: "Controla y gestiona todas tus suscripciones en un solo lugar.",
+    },
     href: "https://unsub.losjuan.com/es/",
     shots: [shotUnsubDashboard, shotUnsubSuscripciones, shotUnsubRecordatorios],
   },
   {
     id: "pollanzas",
     name: "Pollanzas Personales",
-    group: "Finanzas",
-    description: "Controla tus ingresos y gastos mes a mes.",
+    group: { en: "Finances", es: "Finanzas" },
+    description: {
+      en: "Keep track of your income and expenses month by month.",
+      es: "Controla tus ingresos y gastos mes a mes.",
+    },
     href: "https://pollanzas.losjuan.com/es",
     shots: [shotPollanzasDashboard, shotPollanzasReportes, shotPollanzasAjustes],
   },
@@ -99,6 +110,7 @@ function slideStyle(name, i, count) {
 export default function SideProjects() {
   const [active, setActive] = useState(0);
   const navigate = useNavigate();
+  const lang = useLang();
   const project = PROJECTS[active];
 
   const select = (i) => {
@@ -363,7 +375,7 @@ export default function SideProjects() {
 
       `}</style>
 
-      <div className="sp-title">SIDE PROJECTS</div>
+      <div className="sp-title">{lang === "es" ? "PROYECTOS" : "SIDE PROJECTS"}</div>
 
       <div className="sp-list" role="navigation">
         {PROJECTS.map((item, i) => (
@@ -381,7 +393,7 @@ export default function SideProjects() {
             <div className="sp-row-content">
               <img className="sp-row-icon" src={iconPlant} alt="" />
               <div className="sp-row-name">{item.name}</div>
-              <div className="sp-row-go">OPEN</div>
+              <div className="sp-row-go">{lang === "es" ? "ABRIR" : "OPEN"}</div>
             </div>
           </div>
         ))}
@@ -412,12 +424,12 @@ export default function SideProjects() {
           )}
         </div>
         <div className="sp-card-body">
-          <div className="sp-card-group">{project.group}</div>
+          <div className="sp-card-group">{project.group[lang]}</div>
           <div className="sp-card-name">{project.name}</div>
-          <div className="sp-card-text">{project.description}</div>
+          <div className="sp-card-text">{project.description[lang]}</div>
           <div className="sp-card-link">
             <span className="sp-card-url">{project.href.replace(/^https?:\/\//, "")}</span>
-            <span className="sp-card-open">↵ OPEN</span>
+            <span className="sp-card-open">↵ {lang === "es" ? "ABRIR" : "OPEN"}</span>
           </div>
         </div>
       </a>

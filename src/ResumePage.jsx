@@ -2,68 +2,142 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { resumeBg } from "./media";
 import { play } from "./sound";
+import { useLang } from "./lang";
 import BgVideo from "./BgVideo";
 import KeyHints from "./KeyHints";
 
 // One card per section. `rows` fill the panel that opens beside the selected
 // card (title + a short status tag) and `details` its bullet list. RANK on a
-// card is how many rows the section has.
+// card is how many rows the section has. Each text has an English (`en`) and
+// a Spanish (`es`) version.
 const ITEMS = [
   {
-    id: "education", badge: "I", title: "EDUCATION", subtitle: "Law / Programming", log: "EDUCATION LOG",
-    rows: [
-      { title: "Law: lawyer in Colombia", status: "Complete" },
-      { title: "Programming: 4 years of practice", status: "Ongoing" },
-      { title: "New technologies", status: "Always" },
-    ],
-    details: [
-      "Trained and practiced as a lawyer in Colombia.",
-      "Moved into software and has been programming for 4 years.",
-      "Keeps learning new tools and technologies as they come.",
-    ],
+    id: "education", badge: "I",
+    en: {
+      title: "EDUCATION", subtitle: "Law / Programming", log: "EDUCATION LOG",
+      rows: [
+        { title: "Law: lawyer in Colombia", status: "Complete" },
+        { title: "Programming: 4 years of practice", status: "Ongoing" },
+        { title: "New technologies", status: "Always" },
+      ],
+      details: [
+        "Trained and practiced as a lawyer in Colombia.",
+        "Moved into software and has been programming for 4 years.",
+        "Keeps learning new tools and technologies as they come.",
+      ],
+    },
+    es: {
+      title: "ESTUDIOS", subtitle: "Derecho / Programación", log: "REGISTRO DE ESTUDIOS",
+      rows: [
+        { title: "Derecho: abogado en Colombia", status: "Completo" },
+        { title: "Programación: 4 años de práctica", status: "En curso" },
+        { title: "Nuevas tecnologías", status: "Siempre" },
+      ],
+      details: [
+        "Se formó y ejerció como abogado en Colombia.",
+        "Se pasó al software y lleva 4 años programando.",
+        "Sigue aprendiendo herramientas y tecnologías nuevas a medida que salen.",
+      ],
+    },
   },
   {
-    id: "skills", badge: "II", title: "SKILLS", subtitle: "HTML / CSS / JS / React", log: "SKILL LIST",
-    rows: [
-      { title: "HTML, CSS & JavaScript", status: "Front-end" },
-      { title: "React", status: "Framework" },
-      { title: "Next.js", status: "Framework" },
-      { title: "Vite", status: "Tooling" },
-      { title: "LLMs: local & Claude", status: "AI" },
-    ],
-    details: [
-      "Builds web interfaces with HTML, CSS, JavaScript and React.",
-      "Ships apps with Next.js and Vite.",
-      "Runs language models locally and works with hosted ones like Claude.",
-    ],
+    id: "skills", badge: "II",
+    en: {
+      title: "SKILLS", subtitle: "HTML / CSS / JS / React", log: "SKILL LIST",
+      rows: [
+        { title: "HTML, CSS & JavaScript", status: "Front-end" },
+        { title: "React", status: "Framework" },
+        { title: "Next.js", status: "Framework" },
+        { title: "Vite", status: "Tooling" },
+        { title: "LLMs: local & Claude", status: "AI" },
+      ],
+      details: [
+        "Builds web interfaces with HTML, CSS, JavaScript and React.",
+        "Ships apps with Next.js and Vite.",
+        "Runs language models locally and works with hosted ones like Claude.",
+      ],
+    },
+    es: {
+      title: "HABILIDADES", subtitle: "HTML / CSS / JS / React", log: "LISTA DE HABILIDADES",
+      rows: [
+        { title: "HTML, CSS y JavaScript", status: "Front-end" },
+        { title: "React", status: "Framework" },
+        { title: "Next.js", status: "Framework" },
+        { title: "Vite", status: "Herramientas" },
+        { title: "LLMs: locales y Claude", status: "IA" },
+      ],
+      details: [
+        "Construye interfaces web con HTML, CSS, JavaScript y React.",
+        "Publica aplicaciones con Next.js y Vite.",
+        "Corre modelos de lenguaje en local y trabaja con modelos en la nube como Claude.",
+      ],
+    },
   },
   {
-    id: "projects", badge: "III", title: "PROJECTS", subtitle: "Side projects", log: "PROJECT LOG",
-    rows: [
-      { title: "Compendio D&D 2024", status: "Live" },
-      { title: "UnsubTracker", status: "Live" },
-      { title: "Pollanzas Personales", status: "Live" },
-      { title: "This site", status: "React + Vite" },
-    ],
-    details: [
-      "Compendio D&D: spells, classes and a character sheet for D&D 2024, in Spanish.",
-      "UnsubTracker: tracks and manages all your subscriptions in one place.",
-      "Pollanzas Personales: keeps track of income and expenses month by month.",
-    ],
+    id: "projects", badge: "III",
+    en: {
+      title: "PROJECTS", subtitle: "Side projects", log: "PROJECT LOG",
+      rows: [
+        { title: "Compendio D&D 2024", status: "Live" },
+        { title: "UnsubTracker", status: "Live" },
+        { title: "Pollanzas Personales", status: "Live" },
+        { title: "This site", status: "React + Vite" },
+      ],
+      details: [
+        "Compendio D&D: spells, classes and a character sheet for D&D 2024, in Spanish.",
+        "UnsubTracker: tracks and manages all your subscriptions in one place.",
+        "Pollanzas Personales: keeps track of income and expenses month by month.",
+      ],
+    },
+    es: {
+      title: "PROYECTOS", subtitle: "Proyectos personales", log: "REGISTRO DE PROYECTOS",
+      rows: [
+        { title: "Compendio D&D 2024", status: "En línea" },
+        { title: "UnsubTracker", status: "En línea" },
+        { title: "Pollanzas Personales", status: "En línea" },
+        { title: "Este sitio", status: "React + Vite" },
+      ],
+      details: [
+        "Compendio D&D: conjuros, clases y hoja de personaje para D&D 2024, en español.",
+        "UnsubTracker: controla y gestiona todas tus suscripciones en un solo lugar.",
+        "Pollanzas Personales: lleva el control de ingresos y gastos mes a mes.",
+      ],
+    },
   },
   {
-    id: "experience", badge: "IV", title: "EXPERIENCE", subtitle: "Eventtia / Law", log: "WORK LOG",
-    rows: [
-      { title: "Front-end developer, Eventtia Inc.", status: "Current" },
-      { title: "Lawyer, Colombia", status: "4 years" },
-    ],
-    details: [
-      "Front-end development at Eventtia Inc.",
-      "4 years of programming experience.",
-      "4 years practicing law in Colombia before moving into software.",
-    ],
+    id: "experience", badge: "IV",
+    en: {
+      title: "EXPERIENCE", subtitle: "Eventtia / Law", log: "WORK LOG",
+      rows: [
+        { title: "Front-end developer, Eventtia Inc.", status: "Current" },
+        { title: "Lawyer, Colombia", status: "4 years" },
+      ],
+      details: [
+        "Front-end development at Eventtia Inc.",
+        "4 years of programming experience.",
+        "4 years practicing law in Colombia before moving into software.",
+      ],
+    },
+    es: {
+      title: "EXPERIENCIA", subtitle: "Eventtia / Derecho", log: "REGISTRO LABORAL",
+      rows: [
+        { title: "Desarrollador front-end, Eventtia Inc.", status: "Actual" },
+        { title: "Abogado, Colombia", status: "4 años" },
+      ],
+      details: [
+        "Desarrollo front-end en Eventtia Inc.",
+        "4 años de experiencia programando.",
+        "4 años ejerciendo el derecho en Colombia antes de pasar al software.",
+      ],
+    },
   },
 ];
+
+// Fixed words of the page.
+const WORDS = {
+  en: { list: "LIST", rank: "RANK", details: "DETAILS" },
+  es: { list: "LISTA", rank: "RANGO", details: "DETALLES" },
+};
 
 export default function ResumePage() {
   const navigate = useNavigate();
@@ -71,6 +145,9 @@ export default function ResumePage() {
   const [mounted, setMounted] = useState(false);
   // The detail panel on the right stays closed until the visitor opens it.
   const [open, setOpen] = useState(false);
+  const lang = useLang();
+  const words = WORDS[lang];
+  const current = ITEMS[active][lang];
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 80);
@@ -443,7 +520,7 @@ export default function ResumePage() {
 
       <div className="resume-overlay">
         <div className="resume-stack">
-          <div className={`resume-list-tag${mounted ? " mounted" : ""}`}>LIST</div>
+          <div className={`resume-list-tag${mounted ? " mounted" : ""}`}>{words.list}</div>
           {ITEMS.map((item, index) => (
             <div
               key={item.id}
@@ -467,14 +544,14 @@ export default function ResumePage() {
               </div>
               <div className="resume-card">
                 <div className="resume-card-inner">
-                  <div className="resume-title">{item.title}</div>
+                  <div className="resume-title">{item[lang].title}</div>
                   <div className="resume-rank">
-                    <div className="resume-rank-label">RANK</div>
-                    <div className="resume-rank-number">{item.rows.length}</div>
+                    <div className="resume-rank-label">{words.rank}</div>
+                    <div className="resume-rank-number">{item[lang].rows.length}</div>
                   </div>
                 </div>
                 <div className="resume-subtitle-bar">
-                  <div className="resume-subtitle">{item.subtitle}</div>
+                  <div className="resume-subtitle">{item[lang].subtitle}</div>
                 </div>
               </div>
             </div>
@@ -485,12 +562,12 @@ export default function ResumePage() {
         <div className="resume-detail-panel" key={ITEMS[active].id}>
           <div className="resume-detail-top">
             <div className="resume-detail-top-index">{String(active + 1).padStart(2, "0")}</div>
-            <div className="resume-detail-top-title">{ITEMS[active].log}</div>
-            <div className="resume-detail-top-progress">{ITEMS[active].rows.length}</div>
+            <div className="resume-detail-top-title">{current.log}</div>
+            <div className="resume-detail-top-progress">{current.rows.length}</div>
           </div>
 
           <div className="resume-detail-list">
-            {ITEMS[active].rows.map((row, i) => (
+            {current.rows.map((row, i) => (
               <div className="resume-detail-row" key={row.title}>
                 <div className="resume-detail-row-index">{String(i + 1).padStart(2, "0")}</div>
                 <div className="resume-detail-row-title">{row.title}</div>
@@ -500,9 +577,9 @@ export default function ResumePage() {
           </div>
 
           <div className="resume-detail-bottom">
-            <div className="resume-detail-bottom-title">DETAILS</div>
+            <div className="resume-detail-bottom-title">{words.details}</div>
             <div className="resume-detail-bullets">
-              {ITEMS[active].details.map((line) => (
+              {current.details.map((line) => (
                 <div className="resume-detail-bullet" key={line}>- {line}</div>
               ))}
             </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { aboutBg } from "./media";
 import { play } from "./sound";
+import { useLang } from "./lang";
 import BgVideo from "./BgVideo";
 import KeyHints from "./KeyHints";
 import makotoProfile from "./assets/makoto-profile.webp";
@@ -24,10 +25,6 @@ import aigisBust from "./assets/aigis-bust.webp";
 import kenBust from "./assets/ken-bust.webp";
 import koromaruBust from "./assets/koromaru-bust.webp";
 import shinjiroBust from "./assets/shinjiro-bust.webp";
-
-// The page language. Every text below has an English and a Spanish version;
-// switch this to "es" (or wire it to a language picker later).
-const LANG = "en";
 
 // One row per entry of the list, top to bottom. To add, remove or reorder
 // entries, edit only this table:
@@ -214,6 +211,7 @@ export default function AboutMe() {
   const [mounted, setMounted] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const navigate = useNavigate();
+  const lang = useLang();
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
@@ -287,19 +285,19 @@ export default function AboutMe() {
       {revealed && (
         <div key={`panel-${active}`} className={`sc-reveal-panel${mounted ? " mounted" : ""}`}>
           <div className="sc-reveal-upper-bar">
-            {PARTY[active][LANG].upper.map((line) => (
+            {PARTY[active][lang].upper.map((line) => (
               <div className="sc-reveal-upper-line" key={line}>{line}</div>
             ))}
           </div>
-          <div className="sc-reveal-lower-bar">{PARTY[active][LANG].lower}</div>
+          <div className="sc-reveal-lower-bar">{PARTY[active][lang].lower}</div>
         </div>
       )}
       {revealed && (
         <div key={`nav-${active}`} className="sc-right-nav">
           <span className="sc-nav-arrow left">◄</span>
-          <button type="button" tabIndex={-1} className="sc-nav-btn" onClick={() => step(-1)} aria-label="Previous">A</button>
+          <button type="button" tabIndex={-1} className="sc-nav-btn" onClick={() => step(-1)} aria-label={lang === "es" ? "Anterior" : "Previous"}>A</button>
           <span className="sc-nav-dot" />
-          <button type="button" tabIndex={-1} className="sc-nav-btn" onClick={() => step(1)} aria-label="Next">D</button>
+          <button type="button" tabIndex={-1} className="sc-nav-btn" onClick={() => step(1)} aria-label={lang === "es" ? "Siguiente" : "Next"}>D</button>
           <span className="sc-nav-arrow right">►</span>
         </div>
       )}
@@ -957,12 +955,12 @@ export default function AboutMe() {
                 <div className="sc-role"><span key={role}>{role}</span></div>
                 <div className="sc-main">
                   <div className="sc-main-top">
-                    <div className="sc-label">{item[LANG].label}</div>
+                    <div className="sc-label">{item[lang].label}</div>
                   </div>
                 </div>
               </div>
               {denied?.index === i && (
-                <div key={denied.n} className="sc-full">PARTY FULL</div>
+                <div key={denied.n} className="sc-full">{lang === "es" ? "PARTY COMPLETA" : "PARTY FULL"}</div>
               )}
             </div>
           </div>

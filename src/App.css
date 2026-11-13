@@ -36,19 +36,20 @@ body {
   border: 0;
   background: none;
   cursor: pointer;
-  font-family: 'Anton', sans-serif;
-  font-size: 13px;
+  /* Same look as the key reminders in the opposite corner. */
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
   letter-spacing: 2px;
   /* The backgrounds go from white to navy in this corner; "difference"
      keeps the label readable on both. */
   color: #fff;
   mix-blend-mode: difference;
-  opacity: 0.4;
+  opacity: 0.85;
   transition: opacity 0.2s ease;
 }
 
 .sound-toggle:hover {
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .sound-toggle-key {
@@ -56,6 +57,86 @@ body {
   border-radius: 3px;
   padding: 1px 6px;
   font-size: 11px;
+}
+
+/* Language box of the menu (src/LangSelect.jsx), where the game shows the
+   wallet: white plate, black frame, big value over a small italic caption. */
+.lang-select {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  z-index: 30;
+  padding: 6px 16px 7px 12px;
+  background: #fff;
+  border: 2px solid #111;
+  color: #111;
+  user-select: none;
+  animation: key-hints-in 0.4s ease 0.3s both;
+}
+.lang-select-options {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 30px;
+  line-height: 1;
+}
+.lang-select-option-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.lang-select-option {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: #b4b4b4;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.lang-select-option:hover { color: #555; }
+.lang-select-option.active { color: #111; font-weight: 700; }
+.lang-select-slash { color: #b4b4b4; }
+.lang-select-key {
+  margin-left: 10px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #777;
+}
+.lang-select-caption {
+  margin-top: 2px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Rights notice (src/Disclaimer.jsx), centred between the sound toggle and
+   the key reminders. */
+.disclaimer {
+  position: fixed;
+  bottom: 6px;
+  left: 50%;
+  z-index: 30;
+  width: min(60vw, 720px);
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  text-align: center;
+  color: #fff;
+  mix-blend-mode: difference;
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
 }
 
 #main {

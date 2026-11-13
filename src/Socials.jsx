@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { socialsBg } from "./media";
 import { play } from "./sound";
+import { useLang } from "./lang";
 import BgVideo from "./BgVideo";
 import KeyHints from "./KeyHints";
 import makotoProfile from "./assets/makoto-profile.webp";
@@ -34,6 +35,7 @@ export default function Socials() {
   const [focus, setFocus]                 = useState("left"); // "left" | "right"
   const [copied, setCopied]               = useState(null);   // id of a handle just copied
   const navigate = useNavigate();
+  const lang = useLang();
 
   // Opens the profile, or copies the handle when there is no link to open.
   const open = (item) => {
@@ -560,7 +562,9 @@ export default function Socials() {
             <img className="sc-info-bar-icon" src={ITEMS[active].icon} alt="" />
             <span className="sc-info-bar-text">{ITEMS[active].handle}</span>
             <span className="sc-info-bar-box">
-              {copied === ITEMS[active].id ? "COPIED" : ITEMS[active].href ? "OPEN" : "COPY"}
+              {lang === "es"
+                ? copied === ITEMS[active].id ? "COPIADO" : ITEMS[active].href ? "ABRIR" : "COPIAR"
+                : copied === ITEMS[active].id ? "COPIED" : ITEMS[active].href ? "OPEN" : "COPY"}
             </span>
           </div>
         </div>
