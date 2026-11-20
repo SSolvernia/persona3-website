@@ -1,79 +1,71 @@
-import { useState, useRef } from 'react'
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
-import { menuIntro, menuLoop } from './media'
-import BgVideo from './BgVideo'
-import P3Menu from './P3Menu'
 import SoundToggle from './SoundToggle'
-import LangSelect from './LangSelect'
 import Disclaimer from './Disclaimer'
-import ResumePage from './ResumePage'
 import PageTransition from './PageTransition'
-import Socials from './Socials'
-import AboutMe from './AboutMe'
-import SideProjects from './SideProjects'
+import CvToggle from './CvToggle'
+import CvPage from './cv/CvPage'
+import { GAME, PORTFOLIO, isGamePath } from './routes'
 import './App.css'
 
-function MenuScreen() {
-  const navigate = useNavigate()
-  const [isLooping, setIsLooping] = useState(false)
-  const loopRef = useRef(null)
+// The classic CV is the front door; the game's pages load only once someone
+// opens the game.
+const MenuScreen = lazy(() => import('./MenuScreen'))
+const AboutMe = lazy(() => import('./AboutMe'))
+const ResumePage = lazy(() => import('./ResumePage'))
+const Socials = lazy(() => import('./Socials'))
+const SideProjects = lazy(() => import('./SideProjects'))
 
-  // The loop clip is mounted (and buffering) underneath from the start, so the
-  // hand-off from the intro is instant instead of waiting on a new download.
-  const handleIntroEnd = () => {
-    loopRef.current?.play()?.catch(() => {})
-    setIsLooping(true)
-  }
-
-  return (
-    <div id="menu-screen">
-      <BgVideo
-        ref={loopRef}
-        media={menuLoop}
-        autoPlay={false}
-        preload="auto"
-      />
-      {!isLooping && (
-        <BgVideo media={menuIntro} loop={false} onEnded={handleIntroEnd} />
-      )}
-      <LangSelect />
-      <P3Menu onNavigate={(page) => navigate(`/${page}`)} />
-    </div>
-  )
-}
+// Black, like the game's backdrop, while a page's code arrives.
+const Game = ({ children }) => (
+  <Suspense fallback={<div id="menu-screen" />}>{children}</Suspense>
+)
 
 function AnimatedRoutes() {
   const location = useLocation()
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={
-          <PageTransition><MenuScreen /></PageTransition>
+        <Route path="/" element={<Navigate to={PORTFOLIO} replace />} />
+        <Route path={PORTFOLIO} element={
+          <PageTransition><CvPage /></PageTransition>
+        } />
+        <Route path={GAME} element={
+          <PageTransition><Game><MenuScreen /></Game></PageTransition>
         } />
         <Route path="/about" element={
-          <PageTransition variant="about"><AboutMe /></PageTransition>
+          <PageTransition variant="about"><Game><AboutMe /></Game></PageTransition>
         } />
         <Route path="/resume" element={
-          <PageTransition><ResumePage /></PageTransition>
+          <PageTransition><Game><ResumePage /></Game></PageTransition>
         } />
         <Route path="/socials" element={
-          <PageTransition variant="socials"><Socials /></PageTransition>
+          <PageTransition variant="socials"><Game><Socials /></Game></PageTransition>
         } />
         <Route path="/projects" element={
-          <PageTransition><SideProjects /></PageTransition>
+          <PageTransition><Game><SideProjects /></Game></PageTransition>
         } />
+        {/* Anything unknown goes to the CV. */}
+        <Route path="*" element={<Navigate to={PORTFOLIO} replace />} />
       </Routes>
     </AnimatePresence>
   )
 }
 
 export default function App() {
+  // The corner controls belong to the game, not to the classic CV.
+  const inGame = isGamePath(useLocation().pathname)
   return (
     <>
       <AnimatedRoutes />
-      <SoundToggle />
-      <Disclaimer />
+      {inGame && (
+        <>
+          <CvToggle />
+          <SoundToggle />
+          <Disclaimer />
+        </>
+      )}
     </>
   )
 }

@@ -13,6 +13,7 @@ import hideUrl from './assets/sfx/hide.mp3'
 import tabUrl from './assets/sfx/tab.mp3'
 import toggleUrl from './assets/sfx/toggle.mp3'
 import flyinUrl from './assets/sfx/flyin.mp3'
+import { isGamePath } from './routes'
 
 // Tune by ear here: which file each action plays and how loud (0 to 1).
 // The files come from `npm run media -- audio` (scripts/optimize-media.sh).
@@ -43,6 +44,11 @@ function readEnabled() {
 }
 
 let enabled = readEnabled()
+
+// Sound belongs to the game. The classic CV is a plain document: no music,
+// no effects, whatever the sound setting says. Read from the address bar, so
+// it is always current.
+const quiet = () => !isGamePath(window.location.pathname)
 let ctx = null
 const buffers = new Map()
 
@@ -53,20 +59,25 @@ music.loop = true
 music.volume = MUSIC_VOLUME
 music.src = bgmUrl
 
-// The effects are a few KB each: fetch them up front so the first one is instant.
-const bytes = Object.fromEntries(
-  Object.entries(SFX).map(([name, { url }]) => {
-    const data = fetch(url).then((res) => res.arrayBuffer())
+// The effects are a few KB each. On a game page they are fetched up front so
+// the first one is instant; a visit that starts on the CV fetches them only
+// once the game opens.
+const bytes = new Map()
+function fetchBytes(name) {
+  if (!bytes.has(name)) {
+    const data = fetch(SFX[name].url).then((res) => res.arrayBuffer())
     data.catch(() => {}) // a missing file just means that sound stays silent
-    return [name, data]
-  }),
-)
+    bytes.set(name, data)
+  }
+  return bytes.get(name)
+}
+if (!quiet()) Object.keys(SFX).forEach(fetchBytes)
 
 function buffer(name) {
   if (!buffers.has(name)) {
     buffers.set(
       name,
-      bytes[name].then(
+      fetchBytes(name).then(
         // Callback form: older Safari has no promise-returning decodeAudioData.
         (data) => new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject)),
       ),
@@ -78,7 +89,7 @@ function buffer(name) {
 // Runs on every key press and click, not just the first: some events (Escape,
 // the start of a touch) do not count as permission to play sound.
 function unlock() {
-  if (!enabled) return
+  if (!enabled || quiet()) return
   if (!ctx) {
     const AudioCtx = window.AudioContext || window.webkitAudioContext
     if (!AudioCtx) return
@@ -97,7 +108,7 @@ function unlock() {
 // `late`: play it even if decoding takes a moment (only for the intro, which
 // follows no particular gesture).
 export function play(name, { late = false } = {}) {
-  if (!enabled || !ctx) return
+  if (!enabled || !ctx || quiet()) return
   const asked = performance.now()
   buffer(name)
     .then((decoded) => {
@@ -132,12 +143,21 @@ export function toggleSound() {
 
 export const isSoundOn = () => enabled
 
+// Call right after switching between the game and the classic CV: stops the
+// music on the CV, and brings it back on the game pages.
+export function syncMusic() {
+  if (quiet()) music.pause()
+  else unlock()
+}
+
 export function subscribeSound(notify) {
   listeners.add(notify)
   return () => listeners.delete(notify)
 }
 
 function onShortcut(e) {
+  // The CV has no sound control to show the change, so M does nothing there.
+  if (quiet()) return
   if (e.key.toLowerCase() === 'm' && !e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
     toggleSound()
   }
@@ -149,7 +169,7 @@ function onVisibility() {
   if (document.hidden) {
     music.pause()
     ctx.suspend().catch(() => {})
-  } else if (enabled) {
+  } else if (enabled && !quiet()) {
     ctx.resume().catch(() => {})
     music.play().catch(() => {})
   }
@@ -158,7 +178,7 @@ function onVisibility() {
 // The fly-in of the menu, as the page opens. Most browsers refuse sound before
 // the first key press or click; then it plays on that first one instead.
 let introPlayed = false
-if (enabled) {
+if (enabled && !quiet()) {
   const intro = new Audio(flyinUrl)
   intro.volume = SFX.flyin.volume
   intro
@@ -173,6 +193,8 @@ const UNLOCK_EVENTS = ['keydown', 'pointerdown', 'pointerup']
 UNLOCK_EVENTS.forEach((type) => window.addEventListener(type, unlock, { capture: true }))
 window.addEventListener('keydown', onShortcut)
 document.addEventListener('visibilitychange', onVisibility)
+// Back / Forward between the game and the CV: start or stop the music to match.
+window.addEventListener('popstate', syncMusic)
 
 // Dev only: when this file is edited, stop the old copy so music does not double up.
 if (import.meta.hot) {
@@ -182,5 +204,6 @@ if (import.meta.hot) {
     UNLOCK_EVENTS.forEach((type) => window.removeEventListener(type, unlock, { capture: true }))
     window.removeEventListener('keydown', onShortcut)
     document.removeEventListener('visibilitychange', onVisibility)
+    window.removeEventListener('popstate', syncMusic)
   })
 }

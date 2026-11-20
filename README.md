@@ -1,9 +1,13 @@
 # Juan Ortega — Portfolio
 
-A personal portfolio styled after the menus of *Persona 3 Reload*: a main menu
-over a looping video, and one page per section (About, Resume, Socials, Side
-Projects), driven by the keyboard or the mouse, with the game's UI sounds and
-an English / Spanish switch.
+A personal portfolio in two halves, both in English and Spanish:
+
+- **Classic CV** (`/portfolio`, the front page): one scrolling page laid out as
+  a court filing on pleading paper, on a desk.
+- **Game mode** (`/game`): a menu styled after *Persona 3 Reload* over a
+  looping video, and one page per section (About, Resume, Socials, Side
+  Projects), driven by the keyboard or the mouse, with the game's UI sounds.
+  Press C (or the button in the corner) to go back to the CV.
 
 ## Credits
 
@@ -32,14 +36,23 @@ in `/assets` for a year.
 ## Architecture
 
 Vite + React 19, with `react-router-dom` for the pages and `framer-motion` for
-the transitions between them. There is no backend: everything is static.
+the transitions between them. The CV's controls (language switch, tooltips,
+the exhibit viewer, toasts, the timeline) come from
+[ui-sdk](https://ui-sdk.dev), unstyled, styled in `src/cv/cv.css`. There is no
+backend: everything is static.
 
 ```
 index.html            title, favicon, Google Fonts
 src/
   main.jsx            mounts <App> inside the router
-  App.jsx             routes, page transitions, and what is on every page
-                      (sound toggle, rights notice); the menu screen
+  App.jsx             routes, page transitions, and the game's corner
+                      controls (CV switch, sound toggle, rights notice)
+  routes.js           /portfolio, /game, and which paths belong to the game
+  cv/                 /portfolio  the classic CV: CvPage, Exhibit, Desk
+                      (paperclip, stamp, coffee ring), content.js, cv.css
+  data/               projects and links, shared by the CV and the game
+  MenuScreen.jsx      /game      the menu screen
+  CvToggle.jsx        back to the CV from the game (C key)
   P3Menu.jsx          the main menu
   AboutMe.jsx         /about     party list + status screen of each entry
   ResumePage.jsx      /resume    sections and their detail panel
@@ -61,9 +74,10 @@ scripts/
 
 How the pieces fit:
 
-- **One file per page.** Each page holds its own content in a table at the top
-  of the file (`PARTY`, `ITEMS`, `PROJECTS`) and its own CSS in a `<style>`
-  block. Changing the content means editing only that table.
+- **One file per page.** Each game page holds its own content in a table at
+  the top of the file (`PARTY`, `ITEMS`) and its own CSS in a `<style>`
+  block. Changing the content means editing only that table. Projects and
+  links live in `src/data/`, since the CV shows them too.
 - **Keyboard first.** Every page listens for keys on `window` (arrows, Enter,
   Esc, plus A/D and Space on About). Buttons never take focus, so Enter is
   always handled once, by the page.

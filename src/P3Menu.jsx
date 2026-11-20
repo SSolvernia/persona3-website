@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import KeyHints from "./KeyHints";
 import { play } from "./sound";
+import { GITHUB } from "./data/links";
 import { useLang } from "./lang";
 
 const ITEMS = [
   { id: "about",   label: { en: "ABOUT ME", es: "SOBRE MÍ" },      page: "about",   fontSize: 80, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
   { id: "resume",  label: { en: "RESUME", es: "CURRÍCULO" },        page: "resume",  fontSize: 66, offsetX: 20, offsetY: 8,  skew: -11, skewY: -10 },
-  { id: "github",  label: { en: "GITHUB LINK", es: "GITHUB" },   href: "https://github.com/SSolvernia", fontSize: 68, offsetX: 8, offsetY: 6,  skew: 0, skewY: -4  },
+  { id: "github",  label: { en: "GITHUB LINK", es: "GITHUB" },   href: GITHUB, fontSize: 68, offsetX: 8, offsetY: 6,  skew: 0, skewY: -4  },
   { id: "socials", label: { en: "SOCIALS", es: "REDES" },       page: "socials", fontSize: 74, offsetX: 16, offsetY: 8,  skew: -3,  skewY: 5   },
   { id: "sideproj",label: { en: "SIDE PROJECTS", es: "PROYECTOS" }, page: "projects",fontSize: 56, offsetX: 10, offsetY: 6,  skew: -4,  skewY: 7   },
 ];

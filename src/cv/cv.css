@@ -1,0 +1,948 @@
+/* The classic CV (src/cv/CvPage.jsx): a court filing on pleading paper,
+   lying on a leather desk blotter. Cream paper with real tooth and fibres,
+   folded in three, the red double rule down the left margin and a number in
+   the margin for every line, the way pleadings (and code editors) number
+   theirs. A paperclip, a stamp and a coffee ring finish the desk.
+   Everything is scoped under .cv-page.
+
+   The textures are SVG noise filters inlined as data URIs (lit from one
+   side for relief): no image files to download. */
+
+.cv-page {
+  --paper: #f6f0e1;
+  --paper-shade: #e9dfc8;
+  --ink: #1d1b17;
+  --ink-soft: #57524a;
+  --ink-faint: #a0957f;
+  --rule: #c2362f;
+  --stamp: #b3261e;
+  --line: #d8cdb4;
+  --blue: #1f3fbf; /* the game's blue, kept as the ink of links */
+  --sticker: #f3d34a;
+  --cream: #f1ead8;
+  --gutter: 88px;
+  --serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+  --display: 'Libre Caslon Display', 'Libre Caslon Text', Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  /* The game pages keep the body from scrolling, so this page scrolls itself. */
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The blotter: a desk lamp's warm pool of light on green leather. */
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 226, 170, 0.22), transparent 70%),
+    radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.45) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='l' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3CfeDiffuseLighting lighting-color='%2353655a' surfaceScale='1.8'%3E%3CfeDistantLight azimuth='225' elevation='48'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)'/%3E%3C/svg%3E"),
+    #34443a;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cv-page:focus { outline: none; }
+.cv-page ::selection { background: var(--sticker); color: var(--ink); }
+.cv-page a { color: inherit; }
+
+.cv-page .visually-hidden,
+.cv-skip:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cv-skip {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+  padding: 6px 10px;
+  background: var(--ink);
+  color: var(--paper) !important;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.cv-page :focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ── Top bar ─────────────────────────────────────────────── */
+
+.cv-bar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px max(16px, calc((100% - 880px) / 2));
+  background: rgba(24, 31, 27, 0.78);
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.cv-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cv-page .cv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--ink);
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.cv-page .cv-btn:hover {
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+.cv-bar .cv-btn:hover { box-shadow: 3px 3px 0 #0b0f0c; }
+.cv-page .cv-btn:active,
+.cv-page .cv-btn[data-disabled] {
+  box-shadow: none;
+  transform: none;
+}
+.cv-page .cv-btn[data-disabled] { opacity: 0.35; cursor: default; }
+
+/* A slanted chip of the game's blue: the way to the menu. */
+.cv-game-chip {
+  width: 16px;
+  height: 12px;
+  background: linear-gradient(90deg, #1a6aff 0 60%, #7dd4fc 60%);
+  clip-path: polygon(22% 0, 100% 0, 78% 100%, 0 100%);
+  transition: transform 0.2s ease;
+}
+.cv-game:hover .cv-game-chip { transform: translateX(3px); }
+
+/* EN / ES: the indicator slides under the choice. */
+.cv-lang {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+  height: 34px;
+  border: 1px solid var(--ink);
+  background: var(--cream);
+}
+.cv-lang-indicator {
+  position: absolute;
+  z-index: -1;
+  top: var(--segmented-control-indicator-top);
+  left: var(--segmented-control-indicator-left);
+  width: var(--segmented-control-indicator-width);
+  height: var(--segmented-control-indicator-height);
+  background: var(--ink);
+  transition: left 0.22s cubic-bezier(0.65, 0, 0.35, 1), width 0.22s ease;
+}
+.cv-lang-indicator[data-activation-direction="none"] { transition: none; }
+.cv-lang-item {
+  min-width: 44px;
+  padding: 0 10px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  transition: color 0.22s ease;
+}
+.cv-lang-item[data-checked] { color: var(--cream); }
+
+/* Tooltips: a strip of black label tape. */
+.cv-tip {
+  max-width: 280px;
+  padding: 7px 10px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  transform-origin: var(--transform-origin);
+  transition: opacity 0.15s ease, scale 0.15s ease;
+}
+.cv-tip:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+  scale: 0.96;
+}
+.cv-tip[data-instant] { transition: none; }
+
+/* ── The stack of sheets ─────────────────────────────────── */
+
+.cv-stack {
+  position: relative;
+  max-width: 880px;
+  margin: 56px auto 96px;
+  animation: cv-sheet-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The sheets underneath peek out, a little askew. */
+.cv-under {
+  position: absolute;
+  inset: 0;
+  background: var(--paper-shade);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.cv-under-1 { transform: rotate(-1.3deg) translate(-6px, 6px); }
+.cv-under-2 {
+  transform: rotate(0.9deg) translate(8px, 3px);
+  background: #efe6d1;
+}
+
+.cv-clip {
+  position: absolute;
+  z-index: 3;
+  top: -38px;
+  left: 128px;
+  width: 36px;
+  height: 108px;
+  transform: rotate(6deg);
+  filter: drop-shadow(2px 3px 1.5px rgba(40, 30, 10, 0.4));
+  pointer-events: none;
+}
+
+.cv-paper {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+  padding: 72px 64px 80px var(--gutter);
+  counter-reset: ln;
+  background-color: var(--paper);
+  background-image:
+    /* Folded in three: each crease is a shadow and a highlight. */
+    linear-gradient(180deg,
+      transparent calc(33.33% - 14px),
+      rgba(110, 85, 40, 0.06) calc(33.33% - 1px),
+      rgba(255, 255, 255, 0.7) 33.33%,
+      rgba(255, 255, 255, 0) calc(33.33% + 10px)),
+    linear-gradient(180deg,
+      transparent calc(66.66% - 1px),
+      rgba(255, 255, 255, 0.75) 66.66%,
+      rgba(110, 85, 40, 0.1) calc(66.66% + 1px),
+      transparent calc(66.66% + 18px)),
+    /* Age: darker, warmer edges and a few foxing spots. */
+    radial-gradient(ellipse 110% 90% at 50% 40%, transparent 62%, rgba(150, 110, 50, 0.16) 100%),
+    radial-gradient(circle at 91% 12%, rgba(160, 110, 50, 0.13) 0 3px, transparent 7px),
+    radial-gradient(circle at 7% 58%, rgba(160, 110, 50, 0.1) 0 2px, transparent 6px),
+    radial-gradient(circle at 84% 81%, rgba(160, 110, 50, 0.11) 0 4px, transparent 9px),
+    radial-gradient(circle at 30% 94%, rgba(160, 110, 50, 0.08) 0 2px, transparent 5px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0117 0.0937' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.34 0 0 0 0 0.2 1.1 0 0 0 -0.66'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.12),
+    0 10px 18px -6px rgba(0, 0, 0, 0.35),
+    0 30px 60px -20px rgba(0, 0, 0, 0.5);
+}
+
+/* The tooth of the paper, multiplied over everything on the sheet, ink
+   included, the way print takes the surface it lands on. */
+.cv-texture {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='p' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.055' numOctaves='4' seed='3' stitchTiles='stitch'/%3E%3CfeDiffuseLighting lighting-color='%23fffdf6' surfaceScale='1.3'%3E%3CfeDistantLight azimuth='45' elevation='62'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+/* Pleading paper: a red double rule on the left, a single one on the right. */
+.cv-paper::before,
+.cv-paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.cv-paper::before {
+  left: calc(var(--gutter) - 22px);
+  width: 4px;
+  border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  opacity: 0.85;
+}
+.cv-paper::after {
+  right: 40px;
+  border-left: 1px solid var(--rule);
+  opacity: 0.5;
+}
+
+.cv-coffee {
+  position: absolute;
+  z-index: 2;
+  top: 1060px; /* beside the skills, where the right of the sheet is empty */
+  right: -64px;
+  width: 220px;
+  height: 220px;
+  transform: rotate(-24deg);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Ink sits a little into the paper. */
+.cv-paper :is(h1, h2, h3, p, dt, dd, li, a, span) {
+  text-shadow: 0 0 0.6px rgba(29, 27, 23, 0.35);
+}
+
+/* The margin numbers. Each one sits level with the first line of its
+   element; --ln-y nudges it onto that line's baseline. */
+.ln::before {
+  counter-increment: ln;
+  content: counter(ln);
+  position: absolute;
+  left: 0;
+  width: calc(var(--gutter) - 34px);
+  margin-top: var(--ln-y, 7px);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: right;
+  text-transform: none;
+  text-shadow: none;
+  color: var(--ink-faint);
+}
+
+/* ── Caption ─────────────────────────────────────────────── */
+
+.cv-caption {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding-bottom: 28px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.cv-name {
+  --ln-y: 22px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(34px, 5.2vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+  text-wrap: balance;
+}
+.cv-role {
+  --ln-y: 8px;
+  font-style: italic;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.cv-caption-paren {
+  white-space: pre;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  padding-top: 6px;
+}
+
+.cv-caption-doc { padding-top: 8px; }
+/* Side by side, the document column's lines would share margin numbers with
+   the name's; they are numbered only once the caption stacks, on phones. */
+@media (min-width: 721px) {
+  .cv-caption-doc .ln::before { display: none; }
+}
+.cv-doc {
+  --ln-y: 8px;
+  font-variant: small-caps;
+  letter-spacing: 0.08em;
+  font-size: 22px;
+  line-height: 1.3;
+}
+.cv-no {
+  --ln-y: 6px;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 15px;
+}
+.cv-no-note {
+  --ln-y: 5px;
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+/* The receiving stamp: red ink, pressed unevenly, a little crooked. */
+.cv-stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 18px;
+  padding: 6px 14px 5px;
+  border: 2.5px solid var(--stamp);
+  outline: 1px solid var(--stamp);
+  outline-offset: 2px;
+  border-radius: 3px;
+  color: var(--stamp);
+  font-family: var(--mono);
+  text-transform: uppercase;
+  line-height: 1.15;
+  text-shadow: none;
+  transform: rotate(-7deg);
+  mix-blend-mode: multiply;
+  opacity: 0.82;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='140'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -4 0 0 0 2.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='140'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -4 0 0 0 2.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)'/%3E%3C/svg%3E");
+  animation: cv-stamp-in 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) 1s both;
+}
+.cv-stamp-top {
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.3em;
+}
+.cv-stamp-date {
+  margin: 2px 0;
+  padding: 1px 0;
+  border-block: 1px solid var(--stamp);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+.cv-stamp-bottom {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+
+/* ── Sections ────────────────────────────────────────────── */
+
+.cv-section { margin-bottom: 44px; }
+
+.cv-h2 {
+  --ln-y: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.15;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+/* A rule runs from the heading to the right edge. */
+.cv-h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  transform: translateY(-0.3em);
+}
+.cv-section-mark {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--rule);
+}
+
+.cv-prose {
+  display: block;
+  max-width: 64ch;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+.cv-prose + .cv-prose { margin-top: 10px; }
+
+.cv-entries,
+.cv-exhibits,
+.cv-contacts { list-style: none; }
+
+.cv-entry + .cv-entry { margin-top: 18px; }
+
+.cv-entry-head {
+  --ln-y: 7px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cv-h3 {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.cv-at {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.cv-when {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+/* Experience: a timeline with a wax-seal dot per post, joined by a
+   dashed line. Grid only (nothing positioned), so the margin numbers
+   still count from the sheet. */
+.cv-timeline { display: grid; gap: 22px; }
+.cv-event {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  grid-template-rows: auto 1fr;
+  column-gap: 16px;
+}
+.cv-event:focus-visible { outline-offset: 6px; }
+.cv-event-marker {
+  grid-area: 1 / 1;
+  align-self: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e0605a, var(--stamp) 60%, #7d1712);
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px rgba(179, 38, 30, 0.35);
+}
+.cv-event-line {
+  grid-area: 2 / 1 / 3 / 2;
+  justify-self: center;
+  width: 0;
+  margin: 6px 0 -18px;
+  border-left: 1px dashed var(--ink-faint);
+}
+.cv-event[data-last] .cv-event-line { display: none; }
+.cv-entry-head,
+.cv-event-body { grid-column: 2; }
+
+/* Skills: the group as a run-in label, the items as typed tags. */
+.cv-skills { display: grid; gap: 10px; }
+.cv-skill-row {
+  --ln-y: 8px;
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 16px;
+  align-items: baseline;
+}
+.cv-skill-row dt { font-style: italic; color: var(--ink-soft); }
+.cv-skill-row dd { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.cv-tag {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1;
+  padding: 5px 8px;
+  border: 1px solid var(--ink);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ── Exhibits (projects) ─────────────────────────────────── */
+
+.cv-exhibits { display: grid; gap: 38px; }
+
+.cv-exhibit {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  grid-template-areas:
+    "sticker sticker"
+    "shot body";
+  column-gap: 28px;
+  row-gap: 12px;
+  align-items: start;
+}
+.cv-exhibit:not(:has(.cv-shot)) { grid-template-areas: "sticker sticker" "body body"; }
+
+/* The tab a lawyer sticks on an exhibit. */
+.cv-sticker {
+  grid-area: sticker;
+  justify-self: start;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 10px 2px;
+  background: linear-gradient(180deg, #f7dc5e, var(--sticker));
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transform: rotate(-2deg);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.18);
+}
+.cv-sticker b {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* The first capture, printed and taped to the sheet. Opens the rest. */
+.cv-shot {
+  grid-area: shot;
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 6px 6px 22px;
+  border: 0;
+  background: #fffdf8;
+  cursor: zoom-in;
+  transform: rotate(-0.8deg);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.15),
+    0 6px 12px -4px rgba(60, 40, 10, 0.35);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+.cv-exhibit:nth-child(even) .cv-shot { transform: rotate(0.9deg); }
+.cv-page .cv-shot:hover {
+  transform: rotate(0deg) translateY(-3px);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.15),
+    0 14px 22px -8px rgba(60, 40, 10, 0.45);
+}
+.cv-shot img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top left;
+}
+/* Translucent tape across the top, with torn ends. */
+.cv-shot::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 92px;
+  height: 24px;
+  translate: -50% 0;
+  rotate: 3deg;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 40%),
+    rgba(250, 244, 220, 0.55);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 88% 0, 92% 12%, 96% 0, 100% 9%, 100% 92%, 96% 100%, 92% 88%, 88% 100%, 12% 100%, 8% 90%, 4% 100%, 0 91%);
+  backdrop-filter: blur(0.6px);
+}
+.cv-shot-count {
+  position: absolute;
+  right: 8px;
+  bottom: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+}
+
+.cv-exhibit-body { grid-area: body; }
+.cv-exhibit-body .cv-h3 { --ln-y: 8px; font-size: 20px; }
+.cv-exhibit-group {
+  --ln-y: 5px;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.cv-page .cv-link {
+  --ln-y: 7px;
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-thickness 0.15s ease;
+}
+.cv-page .cv-link:hover { text-decoration-thickness: 2px; }
+
+/* ── The exhibit, enlarged over the page ─────────────────── */
+
+.cv-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 16, 13, 0.72);
+  backdrop-filter: blur(3px);
+  transition: opacity 0.2s ease;
+}
+.cv-dialog-backdrop:is([data-starting-style], [data-ending-style]) { opacity: 0; }
+
+.cv-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(980px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 22px 26px 24px;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  transition:
+    opacity 0.2s,
+    translate 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    rotate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cv-dialog:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+  translate: 0 24px;
+  rotate: -1deg;
+}
+.cv-dialog-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cv-dialog-title {
+  flex: 1;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+}
+.cv-dialog-desc {
+  margin: 8px 0 16px;
+  color: var(--ink-soft);
+}
+
+.cv-carousel-viewport {
+  scrollbar-width: none;
+  background: #111;
+  border: 6px solid #fffdf8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.cv-carousel-content { display: flex; }
+.cv-carousel-item { flex: 0 0 100%; }
+.cv-carousel-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+}
+.cv-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 4px;
+}
+.cv-carousel-dots { display: flex; gap: 8px; }
+.cv-carousel-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.cv-carousel-dot[data-selected] { background: var(--ink); }
+.cv-carousel-dot[hidden] { display: none; }
+
+/* ── Off the record, contact, signature ──────────────────── */
+
+.cv-runin {
+  font-variant: small-caps;
+  font-style: normal;
+  letter-spacing: 0.05em;
+}
+
+.cv-contact {
+  --ln-y: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: 520px;
+  padding: 3px 0;
+}
+.cv-contact .cv-link { margin-top: 0; }
+.cv-contact-label { font-variant: small-caps; letter-spacing: 0.05em; }
+/* Dotted leaders, as in a table of contents. */
+.cv-leader {
+  flex: 1;
+  border-bottom: 1px dotted var(--ink-faint);
+  transform: translateY(-4px);
+}
+.cv-copy {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: copy;
+}
+
+.cv-sign {
+  margin-top: 56px;
+  margin-left: auto;
+  width: min(100%, 340px);
+}
+.cv-signoff { --ln-y: 8px; font-style: italic; }
+.cv-signature {
+  --ln-y: 14px;
+  margin-top: 18px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.2;
+  color: #1c2a6b; /* fountain-pen blue */
+}
+.cv-signline {
+  --ln-y: 7px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--ink);
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  font-size: 15px;
+}
+
+/* ── Toasts: a torn slip of paper ────────────────────────── */
+
+.cv-toasts {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  z-index: 10;
+  width: min(320px, calc(100vw - 32px));
+  height: var(--toast-front-height);
+  translate: -50% 0;
+}
+.cv-toast {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: calc(100 - var(--toast-index));
+  height: var(--toast-height);
+  overflow: hidden;
+  padding: 10px 14px;
+  background: var(--cream);
+  color: var(--ink);
+  border-left: 4px solid var(--stamp);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  font-family: var(--mono);
+  font-size: 13px;
+  translate: var(--toast-swipe-x, 0px) calc(var(--toast-index) * -10px + var(--toast-swipe-y, 0px));
+  transition: translate 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+  user-select: none;
+}
+.cv-toast:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+  translate: 0 16px;
+}
+.cv-toast[data-swiping] { transition: none; }
+.cv-toast-title { font-weight: 500; }
+.cv-toast-desc { color: var(--ink-soft); }
+
+/* ── Entrance: the stack slides onto the desk, then each section is inked
+   in turn. Opacity only inside the sheet: a transform there would move the
+   margin numbers. ── */
+
+@keyframes cv-sheet-in {
+  from { opacity: 0; translate: 0 26px; rotate: 0.6deg; }
+  to   { opacity: 1; translate: 0 0; rotate: 0deg; }
+}
+@keyframes cv-ink-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cv-stamp-in {
+  from { opacity: 0; scale: 1.6; }
+  to   { opacity: 0.82; scale: 1; }
+}
+.cv-caption,
+.cv-section,
+.cv-sign {
+  animation: cv-ink-in 0.5s ease both;
+  animation-delay: calc(0.3s + var(--i, 0) * 0.08s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-page *,
+  .cv-stack {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Phones ──────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .cv-page { --gutter: 44px; font-size: 16px; }
+  .cv-stack { margin: 22px 10px 40px; }
+  .cv-under-1 { transform: rotate(-1deg) translate(-3px, 4px); }
+  .cv-under-2 { transform: rotate(0.8deg) translate(3px, 2px); }
+  .cv-clip { left: 60px; top: -26px; width: 26px; height: 78px; }
+  .cv-coffee { top: 380px; right: -90px; width: 170px; height: 170px; }
+  .cv-paper { padding: 40px 18px 56px var(--gutter); }
+  .cv-paper::before { left: calc(var(--gutter) - 12px); width: 3px; }
+  .cv-paper::after { display: none; }
+  .ln::before { width: calc(var(--gutter) - 18px); font-size: 10px; }
+
+  .cv-caption { grid-template-columns: 1fr; gap: 14px; }
+  .cv-caption-paren { display: none; }
+  .cv-caption-doc { padding-top: 12px; border-top: 1px dashed var(--line); }
+
+  .cv-h2 { font-size: 25px; --ln-y: 9px; }
+  .cv-skill-row { grid-template-columns: 1fr; gap: 6px; }
+  .cv-exhibit,
+  .cv-exhibit:not(:has(.cv-shot)) {
+    grid-template-columns: 1fr;
+    grid-template-areas: "sticker" "shot" "body";
+  }
+  .cv-entry-head { flex-direction: column; gap: 0; }
+  .cv-entry-head .cv-when { order: -1; }
+
+  .cv-bar { padding: 8px 12px; }
+  .cv-page .cv-btn { padding: 0 10px; }
+  .cv-print { display: none !important; }
+  .cv-dialog { padding: 16px; }
+  .cv-dialog-title { font-size: 22px; }
+}
+
+/* ── Print: just the sheet ───────────────────────────────── */
+
+@media print {
+  @page { margin: 14mm 12mm; }
+  html, body, #root { height: auto !important; overflow: visible !important; background: #fff !important; }
+  .cv-page { position: static; overflow: visible; background: #fff; }
+  .cv-bar, .cv-skip, .cv-under, .cv-clip, .cv-coffee, .cv-texture, .cv-stamp, .cv-toasts { display: none !important; }
+  .cv-stack { margin: 0; max-width: none; animation: none; }
+  .cv-paper {
+    padding: 0 0 0 var(--gutter);
+    overflow: visible;
+    background: none;
+    box-shadow: none;
+  }
+  .cv-paper::after { display: none; }
+  .cv-paper :is(h1, h2, h3, p, dt, dd, li, a, span) { text-shadow: none; }
+  .cv-caption, .cv-section, .cv-sign { animation: none; }
+  .cv-section, .cv-exhibit { break-inside: avoid; }
+  .cv-shot { transform: none !important; box-shadow: none; border: 1px solid #ccc; }
+  .cv-shot::before, .cv-shot-count { display: none; }
+  .cv-event-marker, .cv-sticker { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .cv-page .cv-link, .cv-copy { color: var(--ink); }
+}

@@ -1,0 +1,156 @@
+// Text of the classic CV (/portfolio), in English (`en`) and Spanish (`es`).
+// Projects and links are not here: they come from src/data/ and are shared
+// with the game pages, so a change there shows up on both.
+
+export const CV = {
+  en: {
+    ui: {
+      game: "Game mode",
+      print: "Print",
+      language: "Language",
+      skip: "Skip to content",
+      gameHint: "Open this portfolio as a game menu. Press C there to come back.",
+      copy: "Copy",
+      copied: "Copied",
+      notifications: "Notifications",
+      enlarge: "See every capture",
+      captures: "captures",
+      capture: "Capture",
+      chooseCapture: "Choose a capture",
+      prev: "Previous",
+      next: "Next",
+      close: "Close",
+    },
+    stamp: { top: "Received", bottom: "Front-end office" },
+    caption: {
+      name: "Juan Diego Ortega Alzate",
+      roles: ["Front-end developer,", "formerly a lawyer."],
+      doc: "Curriculum Vitae",
+      no: "No. 4 + 4",
+      noNote: "four years of law, four of code",
+    },
+    sections: {
+      summary: "Statement",
+      experience: "Experience",
+      education: "Education",
+      skills: "Skills",
+      projects: "Exhibits",
+      interests: "Off the record",
+      contact: "Contact",
+    },
+    summary: [
+      "Front-end developer at Eventtia Inc. Before writing code, I practiced law in Colombia for four years; I have now spent four more building for the web.",
+      "I work with React, Next.js and Vite, run language models on my own hardware and work with hosted ones like Claude. Every new technology is the next thing to learn.",
+    ],
+    experience: [
+      {
+        role: "Front-end developer",
+        place: "Eventtia Inc.",
+        when: "Current",
+        points: ["Front-end development at Eventtia Inc."],
+      },
+      {
+        role: "Lawyer",
+        place: "Colombia",
+        when: "4 years",
+        points: ["Practiced law for four years before moving into software."],
+      },
+    ],
+    education: [
+      { title: "Law", detail: "Trained and practiced as a lawyer in Colombia.", when: "Complete" },
+      { title: "Programming", detail: "Four years of continuous practice, and counting.", when: "Ongoing" },
+    ],
+    skills: [
+      { group: "Front-end", items: ["HTML", "CSS", "JavaScript", "React"] },
+      { group: "Frameworks & tooling", items: ["Next.js", "Vite"] },
+      { group: "AI", items: ["Local LLMs", "Claude"] },
+    ],
+    exhibitLabel: "Exhibit",
+    visit: "Visit",
+    thisSite: {
+      name: "This site",
+      group: "React + Vite",
+      description: "A portfolio that opens as a fan-made game menu, with this plain version one click away.",
+    },
+    interests: [
+      { label: "Hobbies", text: "Building model kits, and modding games just for the fun of it." },
+      { label: "Games", text: "The Persona series, Final Fantasy, NieR:Automata, Baldur's Gate, Outer Wilds, and Dungeons & Dragons at the table." },
+    ],
+    signoff: "Respectfully submitted,",
+  },
+  es: {
+    ui: {
+      game: "Modo juego",
+      print: "Imprimir",
+      language: "Idioma",
+      skip: "Saltar al contenido",
+      gameHint: "Abre este portafolio como menú de videojuego. Allí, pulsa C para volver.",
+      copy: "Copiar",
+      copied: "Copiado",
+      notifications: "Notificaciones",
+      enlarge: "Ver todas las capturas",
+      captures: "capturas",
+      capture: "Captura",
+      chooseCapture: "Elegir una captura",
+      prev: "Anterior",
+      next: "Siguiente",
+      close: "Cerrar",
+    },
+    stamp: { top: "Recibido", bottom: "Oficina de front-end" },
+    caption: {
+      name: "Juan Diego Ortega Alzate",
+      roles: ["Desarrollador front-end,", "antes abogado."],
+      doc: "Hoja de vida",
+      no: "Rad. 4 + 4",
+      noNote: "cuatro años de derecho, cuatro de código",
+    },
+    sections: {
+      summary: "Presentación",
+      experience: "Experiencia",
+      education: "Estudios",
+      skills: "Habilidades",
+      projects: "Anexos",
+      interests: "Fuera de acta",
+      contact: "Contacto",
+    },
+    summary: [
+      "Desarrollador front-end en Eventtia Inc. Antes de programar ejercí como abogado en Colombia durante cuatro años; llevo otros cuatro construyendo para la web.",
+      "Trabajo con React, Next.js y Vite, corro modelos de lenguaje en mi propio equipo y trabajo con modelos en la nube como Claude. Cada tecnología nueva es lo siguiente por aprender.",
+    ],
+    experience: [
+      {
+        role: "Desarrollador front-end",
+        place: "Eventtia Inc.",
+        when: "Actual",
+        points: ["Desarrollo front-end en Eventtia Inc."],
+      },
+      {
+        role: "Abogado",
+        place: "Colombia",
+        when: "4 años",
+        points: ["Ejercí el derecho durante cuatro años antes de pasar al software."],
+      },
+    ],
+    education: [
+      { title: "Derecho", detail: "Me formé y ejercí como abogado en Colombia.", when: "Completo" },
+      { title: "Programación", detail: "Cuatro años de práctica continua, y sumando.", when: "En curso" },
+    ],
+    skills: [
+      { group: "Front-end", items: ["HTML", "CSS", "JavaScript", "React"] },
+      { group: "Frameworks y herramientas", items: ["Next.js", "Vite"] },
+      { group: "IA", items: ["LLMs locales", "Claude"] },
+    ],
+    exhibitLabel: "Anexo",
+    visit: "Visitar",
+    thisSite: {
+      name: "Este sitio",
+      group: "React + Vite",
+      description: "Un portafolio que abre como un menú de videojuego hecho por un fan, con esta versión sencilla a un clic.",
+    },
+    interests: [
+      { label: "Hobbies", text: "Armar model kits y modificar juegos solo por diversión." },
+      { label: "Juegos", text: "La saga Persona, Final Fantasy, NieR:Automata, Baldur's Gate, Outer Wilds y Dungeons & Dragons en la mesa." },
+    ],
+    signoff: "Atentamente,",
+  },
+};

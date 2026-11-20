@@ -13,6 +13,7 @@ import iconItem from "./assets/icon-item.webp";
 import iconSkill from "./assets/icon-skill.webp";
 import iconGear from "./assets/icon-gear.webp";
 import iconPlant from "./assets/icon-plant.webp";
+import { SOCIALS } from "./data/links";
 
 // One row per network, top to bottom:
 //   label    name on the bar
@@ -22,11 +23,12 @@ import iconPlant from "./assets/icon-plant.webp";
 //   icon     small icon of the row on the right
 //   href     profile page that Enter / a click opens. Without it (Discord has
 //            no public profile link) Enter copies the handle instead.
+// handle and href come from src/data/links.js.
 const ITEMS = [
-  { id: "instagram", label: "INSTAGRAM", role: "LEADER", profile: makotoProfile,  handle: "@ssolvernia",     icon: iconSkill, href: "https://www.instagram.com/ssolvernia/" },
-  { id: "facebook",  label: "FACEBOOK",  role: "PARTY",  profile: junpeiProfile,  handle: "shirujdx",        icon: iconItem,  href: "https://www.facebook.com/shirujdx/" },
-  { id: "discord",   label: "DISCORD",   role: "PARTY",  profile: yukariProfile,  handle: "Shiru",           icon: iconGear },
-  { id: "youtube",   label: "YOUTUBE",   role: "PARTY",  profile: akihikoProfile, handle: "@ShiruSolvernia", icon: iconPlant, href: "https://www.youtube.com/@ShiruSolvernia" },
+  { id: "instagram", ...SOCIALS.instagram, label: "INSTAGRAM", role: "LEADER", profile: makotoProfile,  icon: iconSkill },
+  { id: "facebook",  ...SOCIALS.facebook,  label: "FACEBOOK",  role: "PARTY",  profile: junpeiProfile,  icon: iconItem  },
+  { id: "discord",   ...SOCIALS.discord,   label: "DISCORD",   role: "PARTY",  profile: yukariProfile,  icon: iconGear  },
+  { id: "youtube",   ...SOCIALS.youtube,   label: "YOUTUBE",   role: "PARTY",  profile: akihikoProfile, icon: iconPlant },
 ];
 
 export default function Socials() {

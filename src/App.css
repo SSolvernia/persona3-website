@@ -179,3 +179,10 @@ body {
   from { opacity: 0; }
   to   { opacity: 0.85; }
 }
+
+/* The switch to the classic CV (src/CvToggle.jsx), stacked above the sound
+   toggle with the same look. */
+.cv-toggle {
+  bottom: 44px;
+}
+
